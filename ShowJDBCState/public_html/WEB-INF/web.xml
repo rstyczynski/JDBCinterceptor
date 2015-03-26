@@ -1,0 +1,50 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5">
+    <servlet>
+        <servlet-name>CurrentSQL</servlet-name>
+        <servlet-class>styczynski.weblogic.jdbc.debug.show.CurrentSQL</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LatestAlerts</servlet-name>
+        <servlet-class>styczynski.weblogic.jdbc.debug.show.LatestAlerts</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>SetParameters</servlet-name>
+        <servlet-class>styczynski.weblogic.jdbc.debug.config.SetParameters</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LatestAlertsDebug</servlet-name>
+        <servlet-class>styczynski.weblogic.jdbc.debug.show.LatestAlertsDebug</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ExecuteSQL</servlet-name>
+        <servlet-class>styczynski.weblogic.jdbc.debug.test.ExecuteSQL</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CurrentSQL</servlet-name>
+        <url-pattern>/currentSQL</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LatestAlerts</servlet-name>
+        <url-pattern>/latestAlerts</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SetParameters</servlet-name>
+        <url-pattern>/setparameters</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LatestAlertsDebug</servlet-name>
+        <url-pattern>/latestAlertsDebug</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ExecuteSQL</servlet-name>
+        <url-pattern>/executesql</url-pattern>
+    </servlet-mapping>
+    
+    <welcome-file-list>
+        <welcome-file>latestAlerts</welcome-file>
+    </welcome-file-list>
+    
+</web-app>

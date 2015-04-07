@@ -128,10 +128,11 @@ public class HTMLhelper {
         
             }
         
-        out.println("<li>");
-        out.println("<a href=\"setparameters?resetGlobalStatus\">Reset global status</a>");
-        out.println("</li>");
-        
+//When state is cleared by thread local, it's not possible to reinitialize. After this step references will be lost.
+//        out.println("<li>");
+//        out.println("<a href=\"setparameters?resetGlobalStatus\">Reset global status</a>");
+//        out.println("</li>");
+//        
         out.println("</ul>");
         out.println("</div>");
         out.println("</div>");

@@ -1,0 +1,4 @@
+0.4
+* fixed state machine state storage. Switched to ThreadLocal as WLS uses the same interceptor object for different threads
+* added handler for statement operation w/o close operation. In each stage of processing, INITIAL state is expected now
+* moved state initialization to constructor

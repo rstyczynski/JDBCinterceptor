@@ -47,8 +47,10 @@ public class CurrentSQL extends HttpServlet {
         out.println("<th>" + "statement" + "</th>");
         out.println("<th>" + "state" + "</th>");
         out.println("<th>" + "modifiers" + "</th>");
-        out.println("<th>" + "interceptor" + "</th>");
         out.println("<th>" + "updated" + "</th>");
+        out.println("<th>" + "interceptor" + "</th>");
+        out.println("<th>" + "fsmState" + "</th>");
+
         out.println("</tr>");
         
         final Enumeration<String> jdbcEnum = Collections.enumeration(JDBCmonitor.getJdbcGlobalState().keySet());
@@ -94,14 +96,15 @@ public class CurrentSQL extends HttpServlet {
             String jdbcCall = jdbcEnum.nextElement();
             
             JDBCcallFSMstate fsmState = JDBCmonitor.getJdbcGlobalState().get(jdbcCall);
-            
+
             out.println("<td>" + fsmState.getCurrentExecutionTime() + "</td>");
             out.println("<td>" + fsmState.getLasted() + "</td>");
             out.println("<td>" + fsmState.getStatement() + "</td>");
             out.println("<td>" + fsmState.getCurrentState() + "</td>");
-            out.println("<td>" + fsmState.getModifiers() + "</td>");
-            out.println("<td>" + jdbcCall + "</td>");
+            out.println("<td>" + fsmState.getModifiers() + "</td>");  
             out.println("<td>" + sdf.format(fsmState.getTimeUpdated()) + "</td>");
+            out.println("<td>" + jdbcCall.replace("styczynski.weblogic.jdbc.monitor.", "") + "</td>");
+            out.println("<td>" + Integer.toHexString(fsmState.hashCode()) + "</td>");  
             
             out.println("<tr>");
         }

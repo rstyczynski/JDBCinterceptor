@@ -20,6 +20,22 @@ public class JDBCcallFSMstate {
     TopAlertsArray topAlerts = new TopAlertsArray(JDBCmonitor.getTopAlertsToStore());
     
     long timeUpdated;
+    
+    public JDBCcallFSMstate(){
+        initialize();
+    }
+
+    public JDBCcallFSM initialize(){
+        this.setTimer(null);
+        this.setCurrentState(JDBCcallFSM.INITIAL);
+        this.setProcessedStates(new HashMap<StateInterface, Boolean>());
+        this.setLasted(new Long(0));
+        this.setStatement("(none)");
+        this.setModifiers(new LinkedList<MethodDescriptor>());
+        this.setNotification(null);
+        
+        return JDBCcallFSM.INITIAL;
+    }
 
     public void setCurrentState(StateInterface currentState) {
         this.currentState = currentState;

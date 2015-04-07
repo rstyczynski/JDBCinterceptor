@@ -32,7 +32,7 @@ public class ExecuteSQL extends HttpServlet {
         boolean noClose = false;
         String param1 = "10";
         String param2 = "5";
-        String param3 = "";
+        String param3 = "1";
 
         if (request.getParameter("datasource") != null)
             dataSource = request.getParameter("datasource");
@@ -43,11 +43,13 @@ public class ExecuteSQL extends HttpServlet {
         if (request.getParameter("param1") != null)
             param1 = request.getParameter("param1");
         
+        //DONE 0.4
+        //fixed param1 was overriten by param2, param3
         if (request.getParameter("param2") != null)
-            param1 = request.getParameter("param2");
+            param2 = request.getParameter("param2");
         
         if (request.getParameter("param3") != null)
-            param1 = request.getParameter("param3");
+            param3 = request.getParameter("param3");
 
         if (request.getParameter("noClose") != null)
             noClose = true;
@@ -69,33 +71,49 @@ public class ExecuteSQL extends HttpServlet {
             InitialContext ctx = new InitialContext();
             DataSource ds = (DataSource) ctx.lookup(dataSource);
             
-            Connection conn = ds.getConnection();
-            CallableStatement cstmt = conn.prepareCall(sqlCmd);
-            
-            if(isInteger(param2)){
-                Thread.sleep(Integer.valueOf(param2));
-            }
 
-            try {
-                cstmt.setString(1, param1);
-            } catch (SQLException sqle) {
-                //ignore
-            }
+            int executionCnt = 1;
+            if(isInteger(param3)){
+                executionCnt = Integer.valueOf(param3);
+            } 
             
-            if(isInteger(param2)){
-                Thread.sleep(Integer.valueOf(param2));
-            }
-            cstmt.execute();
+            Connection conn = ds.getConnection();
             
-            if(isInteger(param2)){
-                Thread.sleep(Integer.valueOf(param2));
+            for (int i=0; i<executionCnt; i++){
+
+                CallableStatement cstmt = conn.prepareCall(sqlCmd);
+                                    
+                if(isInteger(param2)){
+                    Thread.sleep(Integer.valueOf(param2));
+                }
+    
+                try {
+                    cstmt.setString(1, param1);
+                } catch (SQLException sqle) {
+                    sqle.printStackTrace();
+                }
+                
+                if(isInteger(param2)){
+                    Thread.sleep(Integer.valueOf(param2));
+                }
+                
+                
+                cstmt.execute();
+                
+                
+                if(isInteger(param2)){
+                    Thread.sleep(Integer.valueOf(param2));
+                }
+                
+                if(!noClose) {
+                    cstmt.close();
+                }
             }
             
             if(!noClose) {
-                cstmt.close();
                 conn.close();
             }
-
+              
         } catch (Throwable th) {
             th.printStackTrace(out);
         }

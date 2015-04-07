@@ -49,6 +49,8 @@ import styczynski.weblogic.jdbc.debug.report.ExecutionAlert;
  */
 public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
 
+    //TODO Change method name lookups from list to hashmap. Lookup time will be dramatically lower.
+
     //TODO Find out why level may become negative
 
     //TODO Report stack trace next to lasting sql call 

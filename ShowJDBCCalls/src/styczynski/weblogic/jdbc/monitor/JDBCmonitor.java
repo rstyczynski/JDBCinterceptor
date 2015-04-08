@@ -99,8 +99,8 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
 
     //debug control
     private static boolean printHeadersAlways = true; //print headers for each interception
-    private static boolean debugNormal = true;
-    private static boolean debugDetailed = true;
+    private static boolean debugNormal = false;
+    private static boolean debugDetailed = false;
 
     //logger
     //logger uses class name to make possible deplyment of multiple interceptors with own log files

@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<logging_configuration>
+    <log_handlers>
+        <log_handler name='sql-debug-handler' class='oracle.core.ojdl.logging.ODLHandlerFactory' level='TRACE:32'>
+            <property name='path' value='${domain.home}/servers/${weblogic.Name}/logs/${weblogic.Name}-sql-debug.log'/>
+            <property name='maxFileSize' value='104857600'/>
+            <property name='maxLogSize' value='524288000'/>
+            <property name='encoding' value='UTF-8'/>
+            <property name='useThreadName' value='true'/>
+        </log_handler>
+        <log_handler name='sql-handler' class='oracle.core.ojdl.logging.ODLHandlerFactory' level='WARNING'>
+            <property name='path' value='${domain.home}/servers/${weblogic.Name}/logs/${weblogic.Name}-sql.log'/>
+            <property name='maxFileSize' value='10485760'/>
+            <property name='maxLogSize' value='104857600'/>
+            <property name='encoding' value='UTF-8'/>
+            <property name='useThreadName' value='true'/>
+        </log_handler>
+        <log_handler name='sql1-handler' class='oracle.core.ojdl.logging.ODLHandlerFactory' level='WARNING'>
+            <property name='path' value='${domain.home}/servers/${weblogic.Name}/logs/${weblogic.Name}-sql1.log'/>
+            <property name='maxFileSize' value='10485760'/>
+            <property name='maxLogSize' value='104857600'/>
+            <property name='encoding' value='UTF-8'/>
+            <property name='useThreadName' value='true'/>
+        </log_handler>
+        <log_handler name='sql2-handler' class='oracle.core.ojdl.logging.ODLHandlerFactory' level='WARNING'>
+            <property name='path' value='${domain.home}/servers/${weblogic.Name}/logs/${weblogic.Name}-sql2.log'/>
+            <property name='maxFileSize' value='10485760'/>
+            <property name='maxLogSize' value='104857600'/>
+            <property name='encoding' value='UTF-8'/>
+            <property name='useThreadName' value='true'/>
+        </log_handler>
+        <log_handler name='sql3-handler' class='oracle.core.ojdl.logging.ODLHandlerFactory' level='WARNING'>
+            <property name='path' value='${domain.home}/servers/${weblogic.Name}/logs/${weblogic.Name}-sql3.log'/>
+            <property name='maxFileSize' value='10485760'/>
+            <property name='maxLogSize' value='104857600'/>
+            <property name='encoding' value='UTF-8'/>
+            <property name='useThreadName' value='true'/>
+        </log_handler>
+        <log_handler name='sql4-handler' class='oracle.core.ojdl.logging.ODLHandlerFactory' level='WARNING'>
+            <property name='path' value='${domain.home}/servers/${weblogic.Name}/logs/${weblogic.Name}-sql4.log'/>
+            <property name='maxFileSize' value='10485760'/>
+            <property name='maxLogSize' value='104857600'/>
+            <property name='encoding' value='UTF-8'/>
+            <property name='useThreadName' value='true'/>
+        </log_handler>
+        <log_handler name='sql5-handler' class='oracle.core.ojdl.logging.ODLHandlerFactory' level='WARNING'>
+            <property name='path' value='${domain.home}/servers/${weblogic.Name}/logs/${weblogic.Name}-sql5.log'/>
+            <property name='maxFileSize' value='10485760'/>
+            <property name='maxLogSize' value='104857600'/>
+            <property name='encoding' value='UTF-8'/>
+            <property name='useThreadName' value='true'/>
+        </log_handler>
+    </log_handlers>
+    <loggers>
+        <logger name='styczynski.weblogic.jdbc' level='TRACE:32' useParentHandlers='false'>
+            <handler name='sql-debug-handler'/>
+        </logger>
+        <logger name='styczynski.weblogic.jdbc.monitor.JDBCmonitor' level='TRACE:32' useParentHandlers='true'>
+            <handler name='sql-handler'/>
+        </logger>
+        <logger name='styczynski.weblogic.jdbc.monitor.JDBCmonitor1' level='TRACE:32' useParentHandlers='true'>
+            <handler name='sql1-handler'/>
+        </logger>
+        <logger name='styczynski.weblogic.jdbc.monitor.JDBCmonitor2' level='TRACE:32' useParentHandlers='true'>
+            <handler name='sql2-handler'/>
+        </logger>
+        <logger name='styczynski.weblogic.jdbc.monitor.JDBCmonitor3' level='TRACE:32' useParentHandlers='true'>
+            <handler name='sql3-handler'/>
+        </logger>
+        <logger name='styczynski.weblogic.jdbc.monitor.JDBCmonitor4' level='TRACE:32' useParentHandlers='true'>
+            <handler name='sql4-handler'/>
+        </logger>
+        <logger name='styczynski.weblogic.jdbc.monitor.JDBCmonitor5' level='TRACE:32' useParentHandlers='true'>
+            <handler name='sql5-handler'/>
+        </logger>
+    </loggers>
+</logging_configuration>

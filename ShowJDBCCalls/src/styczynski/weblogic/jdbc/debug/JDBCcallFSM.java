@@ -92,8 +92,8 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
                                        Object[] executedParameter, String callBack) {
                 boolean result = false;
 
-                if (JDBCmonitor.isOnList(Constants.connectionObjectList, executedObject)) {
-                    if (JDBCmonitor.isOnList(Constants.connectionMethodPrePostList, executedMethod + "_" + callBack)) {
+                if (JDBCmonitor.isInSet(Constants.connectionObjectSet, executedObject)) {
+                    if (JDBCmonitor.isInSet(Constants.connectionMethodPrePostSet, executedMethod + "_" + callBack)) {
                         result = true;
                         if (JDBCmonitor.isDebugDetailed())
                             LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed willProcess:" + this);
@@ -172,7 +172,7 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
                 boolean result = true;
 
                 //do not handle execute* w/o parameters
-                if (JDBCmonitor.isOnList(Constants.statementObjectList, executedObject) 
+                if (JDBCmonitor.isInSet(Constants.statementObjectSet, executedObject) 
                     &&
                     executedMethod.toLowerCase().startsWith("execute")
                     &&
@@ -197,7 +197,7 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                     state.setCurrentState(this);
 
-                    if (JDBCmonitor.isOnList(Constants.statementObjectList, executedObject) 
+                    if (JDBCmonitor.isInSet(Constants.statementObjectSet, executedObject) 
                         &&
                         executedMethod.toLowerCase().startsWith("execute")
                         &&
@@ -279,8 +279,8 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                     state.setCurrentState(this);
 
-                    if (JDBCmonitor.isOnList(Constants.statementObjectList, executedObject) &&
-                    JDBCmonitor.isOnList(Constants.statementMethodPostList, executedMethod + "_" + callBack) &&
+                    if (JDBCmonitor.isInSet(Constants.statementObjectSet, executedObject) &&
+                    JDBCmonitor.isInSet(Constants.statementMethodPostSet, executedMethod + "_" + callBack) &&
                         executedMethod.toLowerCase().startsWith("execute")) {
 
                         //CRITICAL
@@ -358,8 +358,8 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                     state.setCurrentState(this);
 
-                    if (JDBCmonitor.isOnList(Constants.statementObjectList, executedObject) &&
-                    JDBCmonitor.isOnList(Constants.statementMethodPostList, executedMethod + "_" + callBack)) {
+                    if (JDBCmonitor.isInSet(Constants.statementObjectSet, executedObject) &&
+                    JDBCmonitor.isInSet(Constants.statementMethodPostSet, executedMethod + "_" + callBack)) {
 
                         //CRITICAL
                         state.setNotification(new NotificationDescriptor("jdbc", "execute", "finished:" + this));
@@ -418,8 +418,8 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
                                        Object[] executedParameter, String callBack) {
                 boolean result = false;
 
-                if (JDBCmonitor.isOnList(Constants.statementObjectList, executedObject)) {
-                    if (JDBCmonitor.isOnList(Constants.statementMethodClosePrePostList, executedMethod + "_" + callBack)) {
+                if (JDBCmonitor.isInSet(Constants.statementObjectSet, executedObject)) {
+                    if (JDBCmonitor.isInSet(Constants.statementMethodClosePrePostSet, executedMethod + "_" + callBack)) {
                         result = true;
                         if (JDBCmonitor.isDebugDetailed())
                             LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed willProcess:" + this);

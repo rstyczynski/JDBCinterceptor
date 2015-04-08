@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
@@ -880,6 +882,14 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             }
         }
         return false;
+    }
+    
+    public static boolean isInMap(Map map, String word){
+        return map.containsKey(word);
+    }
+    
+    public static boolean isInSet(Set map, String word){
+        return map.contains(word);
     }
     
     //NONONO Experimental way to detect connection closed by WebLogic Data Source connection pool.

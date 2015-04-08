@@ -144,7 +144,4 @@ public class LatestAlerts extends HttpServlet {
         out.println("</body></html>");
         out.close();
     }
-
 }
-
-

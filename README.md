@@ -6,9 +6,9 @@ Missing capability of WebLogic is filled with JDBC monitor utilizing interceptor
 *Note that it's an early version of the software. I've made a lot of work to tune and ensure that software is free of problems, but it's only software. Use it with caution.*
 
 ## Alert log
-All executions lasting more that defined threshold are reported to ODL log file. ODL log files are located in server's log directory. SQL alert file is suffixed by "-sql[1-5].log", where number at the end of file name indicates interceptor number. It's important as operator may configure different log files for different data sources. 
+All executions lasting more that defined threshold are reported to ODL log file. ODL log files are located in server's log directory. SQL alert file is suffixed by "`-sql[1-5].log`", where number at the end of file name indicates interceptor number. It's important as operator may configure different log files for different data sources. 
 
-All interceptors share single debug log file. Apart of debug information you will find content from sql[12345]*.log files in the debug log.
+All interceptors share single debug log file. Apart of debug information you will find content from `sql[1..5]*.log` files in the debug log.
 
 ## User interface
 User interface provides two main functions: (1) view on currently active SQL statements, and (2) view on latest alerts. 

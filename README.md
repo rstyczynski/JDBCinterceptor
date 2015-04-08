@@ -13,10 +13,10 @@ All interceptors share single debug log file. Apart of debug information you wil
 ## User interface
 User interface provides two main functions: (1) view on currently active SQL statements, and (2) view on latest alerts. 
 
-View on active SQL is available under: http://host:port/JDBCmonitor/currentSQL
-View on latest alerts is available under: http://host:port/JDBCmonitor/latestAlerts
+View on active SQL is available under: `http://host:port/JDBCmonitor/currentSQL`
+View on latest alerts is available under: `http://host:port/JDBCmonitor/latestAlerts`
 
-Provided menu makes it easy to quickly switch between both views. Next to standard options, console menu contains possibility to configure sensitivity, and debug level. Use detailed debugging with caution, as amount of logged information is quite big, dramatically slowing down server JDBC operations. Menu provides ability to execute exemplary by inention slow SQL statement ({call dbms_lock.sleep(?)}) on "jdbc/SOADataSource". This feature is used to verify proper work of JDBC monitor. Execution of dbs_lock may be parametrized by providing (a) sleep time, (b) datasource, (c) sleep in Java code between JDBC operations, and (d) information to finalize sql interaction w/o close. It's possible to specify own SQL command. 
+Provided menu makes it easy to quickly switch between both views. Next to standard options, console menu contains possibility to configure sensitivity, and debug level. Use detailed debugging with caution, as amount of logged information is quite big, dramatically slowing down server JDBC operations. Menu provides ability to execute exemplary by intention slow SQL statement (`{call dbms_lock.sleep(?)}`) on "`jdbc/SOADataSource`". This feature is used to verify proper work of JDBC monitor. Execution of dbs_lock may be parametrized by providing (a) sleep time, (b) datasource, (c) sleep in Java code between JDBC operations, and (d) information to finalize sql interaction w/o close. It's possible to specify own SQL command. 
 
 More in documentation....
 

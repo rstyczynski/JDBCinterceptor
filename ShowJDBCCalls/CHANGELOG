@@ -9,3 +9,6 @@
 * added documentation
 0.42
 * object/method lookup changed from list to set
+0.43
+* added JDBCmonitor-logging.xml
+* disabled default debug

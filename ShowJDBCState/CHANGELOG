@@ -1,3 +1,0 @@
-0.4
-* fixed isses with overriting console param1 by param2, param3
-* modified status page to show state instance and thread

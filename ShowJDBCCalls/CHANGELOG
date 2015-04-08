@@ -2,3 +2,10 @@
 * fixed state machine state storage. Switched to ThreadLocal as WLS uses the same interceptor object for different threads
 * added handler for statement operation w/o close operation. In each stage of processing, INITIAL state is expected now
 * moved state initialization to constructor
+* fixed isses with overriting console param1 by param2, param3
+* modified status page to show state instance and thread
+0.41
+* added license
+* added documentation
+0.42
+* object/method lookup changed from list to set

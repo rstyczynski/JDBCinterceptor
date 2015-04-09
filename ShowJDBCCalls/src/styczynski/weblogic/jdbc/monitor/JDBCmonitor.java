@@ -106,6 +106,9 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
     //logger uses class name to make possible deplyment of multiple interceptors with own log files
     private Log log = LogFactory.getLog(this.getClass());
 
+    //TODO Check if loggers with the same name are safe in multithreaded environmant
+    //     
+    
     //TODO Externalize connfigurables
     //     (a) MBean
     //     (b) configuration file

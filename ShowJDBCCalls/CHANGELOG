@@ -4,11 +4,13 @@
 * moved state initialization to constructor
 * fixed isses with overriting console param1 by param2, param3
 * modified status page to show state instance and thread
-0.41
+0.4.1
 * added license
 * added documentation
-0.42
+0.4.2
 * object/method lookup changed from list to set
-0.43
+0.4.3
 * added JDBCmonitor-logging.xml
 * disabled default debug
+0.4.4
+* updated documentation in area of ODL configuration

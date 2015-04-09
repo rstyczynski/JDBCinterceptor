@@ -292,7 +292,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
                                    Object[] currentParams, Object currentResult) {
 
         boolean headerPrinted = false;
-        if (printHeadersAlways) {
+        if ((debugNormal || debugDetailed) && printHeadersAlways) {
             printMethodHeader(level, callBack);
             headerPrinted = true;
         }
@@ -304,7 +304,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             Object[] executedParameter = currentParams;
             String returnedObject = currentResult != null ? currentResult.getClass().getName() : "(none)";
 
-            if (printHeadersAlways) {
+            if ((debugNormal || debugDetailed) && printHeadersAlways) {
                 printMethodHeader(level, executedObject, executedMethod, executedParameter);
                 headerPrinted = true;
             }
@@ -382,7 +382,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
                     headerPrinted = true;
                 }
             }
-            if (printHeadersAlways)
+                if ((debugNormal || debugDetailed) && printHeadersAlways)
                 log.debug(level + ": " + "Info: " + "Current interception has execution handler for state : " +
                           currentState + ". Will proceed.");
 
@@ -487,7 +487,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             if (debugNormal)
                 printState(level);
         } else {
-            if (printHeadersAlways)
+            if ((debugNormal || debugDetailed) && printHeadersAlways)
                 log.debug(level + ": " + "Info: " + "Current interception has no execution handler for state: " +
                           currentState);
         }

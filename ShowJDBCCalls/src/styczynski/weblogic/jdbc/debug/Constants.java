@@ -69,7 +69,7 @@ public class Constants {
         return Collections.unmodifiableSet(set);
     }
     
-    private static final String[] statementMethodList = { "execute", "executeQuery", "executeUpdate", "exacuteBatch" };
+    private static final String[] statementMethodList = { "execute", "executeQuery", "executeUpdate", "executeBatch" };
     public static final Set<String> statementMethodSet = getStatementMethodSet();
     private static Set<String> getStatementMethodSet(){
         final Set set = new HashSet<String>();
@@ -84,7 +84,7 @@ public class Constants {
     private static final String[] statementMethodPostList = {
         //post callback is mandatory to compute execution time
         "execute_postInvokeCallback", "executeQuery_postInvokeCallback", "executeUpdate_postInvokeCallback",
-        "exacuteBatch_postInvokeCallback"
+        "executeBatch_postInvokeCallback"
     };
     public static final Set<String> statementMethodPostSet = getStatementMethodPostSet();
     private static Set<String> getStatementMethodPostSet(){

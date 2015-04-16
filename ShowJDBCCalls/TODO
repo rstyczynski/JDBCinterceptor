@@ -1,0 +1,79 @@
+TODO
+========================
+
+
+1. Bugs critical (0)
+========================
+-> (none)
+
+2. Security (4)
+========================
+s1) Remove possibility to run SQL command
+    a) only permitted operator (by role: admin)
+    hint: no - just remove it. It's not necessary, and too risky
+    
+s2) Do not collect SQL arguments
+    a) do not write SQL arguments to log ile
+    hint: control by dynamic parameter - same solution as for debug flag
+    b) do not show SQL arguments on a web page
+    hint: control by dynamic parameter - same solution as for debug flag
+          prefer flag over filtering on Web layer withuse of user role. It's safer not to collect this information at all.
+
+s3) Add data masking for sensitive fields e.g. passwords
+    (a) for SQL text in execute*(sql)
+    (b) for parameters of prepared statement
+
+s4) Protect switching debug
+    a) only permitted operator (by role)
+    b) possibly set should be done with some verification check e.g. sum of current hour and day - to ensure that enabled by intension
+    
+3. Manageability (5)
+========================
+m5) Read configuration from file
+    (a) read cfg file from domain config directory
+    (b) read cfg file from classpath
+    (c) cfg file is a properites file
+    (d) use java.util.Properties load(stream) operation
+    (e) optionally use java.util.Properties save(stream) operation
+    
+m1) Report stack trace next to lasting sql call
+    hint: web interface may ask for stack trace, and filter thread keeping lasting SQL execution
+
+m2) Attach connection information to state object
+    hint: statement.getConnection
+    warn: taking connection information may be expensive. getMetadata is expensive - confirmed
+    
+m3) Recognize associated DataSource
+    (a) to be able to configure different interceptors in independent way
+    (b) use connection to get this data, do it once in instance lifetime
+
+m4) Add possibility to filter requests
+    SQL include/exclude
+    String sqlInclude = "";
+    String sqlExclude = "";
+    
+        ex1: all UPDATE but not on MDS
+            incl: UPDATE
+            excl: MDS
+        ex2: everything but not MDS
+            incl: null
+            excl: MDS
+
+    Filtering may be processed on alerting or state machine level
+    (a) Alerting
+        FSM captures all executions, and alerting filters what should be reported
+    (b) State Machine
+        State Machine processor has capability to hold processing until next initial state detection.
+        Processing hold will be done during SQL detection:
+        (a) prepare(sql) -> makes sense as after this step, a lot of processing may happen
+        (b) execute(sql) -> in pre method
+        -> Implement it in willProcess method (hold check)
+        -> hold should be kept in ThreadLocal
+            
+4. Bugs not critical (1)
+========================
+i1) Find out why level may become negative
+
+5. DONE
+-> Change method name lookups from list to hashmap. Lookup time will be dramatically lower.
+

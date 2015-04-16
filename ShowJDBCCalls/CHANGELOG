@@ -14,3 +14,7 @@
 * disabled default debug
 0.4.4
 * updated documentation in area of ODL configuration
+0.4.5
+* fixed issue with debug log even with debug disabled
+0.4.6
+* added exception reporting - logger does not print stack trace

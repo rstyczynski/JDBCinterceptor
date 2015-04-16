@@ -1,5 +1,8 @@
 package styczynski.weblogic.jdbc.monitor;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import java.sql.SQLException;
 
 import java.util.Arrays;
@@ -50,46 +53,6 @@ import styczynski.weblogic.jdbc.debug.report.ExecutionAlert;
  * @version 0.4
  */
 public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
-
-    //TODO Change method name lookups from list to hashmap. Lookup time will be dramatically lower.
-
-    //TODO Find out why level may become negative
-
-    //TODO Report stack trace next to lasting sql call 
-    //
-    
-    //TODO Recognize associated DataSource
-    //     (a) to be able to configure different interceptrs in independent way
-    //     (b) use connection to get this data, do it once in instance lifetime
-
-    //TODO Add data masking for sensitive fields e.g. passwords
-    //     (a) for SQL text in execute*(sql)
-    //     (b) for parameters of prepared statement
-
-    //TODO Add possibility to filter requests
-    //SQL include/exclude
-    //String sqlInclude = "";
-    //String sqlExclude = "";
-    //
-    //     ex1: all UPDATE but not on MDS
-    //              incl: UPDATE
-    //              excl: MDS
-    //     ex2: everything but not MDS
-    //              incl: null
-    //              excl: MDS
-    //
-    //     Filtering may be processed on alerting or state machine level
-    //     (a) Alerting
-    //          FSM captures all executions, and alerting filters what should be reported
-    //     (b) State Machine
-    //          State Machine processor has capability to hold processing until next initial state detection.
-    //          Processing hold will be done during SQL detection:
-    //          (a) prepare(sql) -> makes sense as after this step, a lot of processing may happen
-    //          (b) execute(sql) -> in pre method
-    //
-    //          -> Implement it in willProcess method (hold check)
-    //          -> hold should be kept in ThreadLocal
-    //
 
     //SQL execution time threshold
     private static long sqlMaxExecutionTime = 1000;
@@ -233,6 +196,12 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             processInvocation("preInvokeCallback", level, currentObject, currentMethod, currentParams, null);
         } catch (Throwable th) {
             log.error("Error processing preInvokeCallback", th);
+            //added exception logging as logger does not print stack trace
+            String executedObject = currentObject != null ? currentObject.getClass().getName() : "(none)";
+            String executedMethod = currentMethod != null ? currentMethod : "(none)";
+            Object[] executedParameter = currentParams;
+            String returnedObject = "(none)";
+            printException("preInvokeCallback", levelCurrent(), executedObject, executedMethod, executedParameter, returnedObject, th);
         }
         return null;
     }
@@ -252,14 +221,21 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
 
         } catch (Throwable th) {
             log.error("Error processing postInvokeCallback", th);
+            
+            //added exception logging as logger does not print stack trace
+            String executedObject = currentObject != null ? currentObject.getClass().getName() : "(none)";
+            String executedMethod = currentMethod != null ? currentMethod : "(none)";
+            Object[] executedParameter = currentParams;
+            String returnedObject = currentResult != null ? currentResult.getClass().getName() : "(none)";
+            printException("postInvokeCallback", levelCurrent(), executedObject, executedMethod, executedParameter, returnedObject, th);
         } finally {
             levelDecrease();    
         }
     }
 
     //WebLogic JDBC interceptor method
-    public void postInvokeExceptionCallback(Object o, String string, Object[] os,
-                                            Throwable thrwbl) throws SQLException {
+    public void postInvokeExceptionCallback(Object currentObject, String currentMethod, Object[] currentParams,
+                                            Throwable exception) throws SQLException {
 
         //TODO Decide what should be done in case of intercepted exception
         //     ignore - it does not influence db call analysis
@@ -280,6 +256,14 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             printMethodHeader(level, callBack);
         } catch (Throwable th) {
             log.error("Error processing postInvokeExceptionCallback", th);
+            
+            //added exception logging as logger does not print stack trace
+            String executedObject = currentObject != null ? currentObject.getClass().getName() : "(none)";
+            String executedMethod = currentMethod != null ? currentMethod : "(none)";
+            Object[] executedParameter = currentParams;
+            String returnedObject = "(none)";
+            printException("preInvokeCallback", levelCurrent(), executedObject, executedMethod, executedParameter, returnedObject, th);
+
         } 
 
         levelDecrease();
@@ -297,13 +281,13 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             headerPrinted = true;
         }
 
+        String executedObject = currentObject != null ? currentObject.getClass().getName() : "(none)";
+        String executedMethod = currentMethod != null ? currentMethod : "(none)";
+        //Object executedParameter = currentParams.length > 0 ? currentParams[0] : "(none)";
+        Object[] executedParameter = currentParams;
+        String returnedObject = currentResult != null ? currentResult.getClass().getName() : "(none)";
+        
         try {
-            String executedObject = currentObject != null ? currentObject.getClass().getName() : "(none)";
-            String executedMethod = currentMethod;
-            //Object executedParameter = currentParams.length > 0 ? currentParams[0] : "(none)";
-            Object[] executedParameter = currentParams;
-            String returnedObject = currentResult != null ? currentResult.getClass().getName() : "(none)";
-
             if ((debugNormal || debugDetailed) && printHeadersAlways) {
                 printMethodHeader(level, executedObject, executedMethod, executedParameter);
                 headerPrinted = true;
@@ -350,6 +334,8 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
         } catch (Throwable th) {
             //always log exception
             log.error("Error processing intercepted method", th);
+            //added exception logging as logger does not print stack trace
+            printException(callBack, level, executedObject, executedMethod, executedParameter, returnedObject, th);
         }
     }
 
@@ -832,6 +818,24 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
         log.debug(buffer.toString());
     }
 
+    private void printException(String callBack, int level, String currentObject, String currentMethod,
+                                Object[] currentParams, String currentResult, Throwable th) {
+        
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append(level + ": " + "----- Exception");
+        printMethodHeader(level, currentObject, currentMethod, currentParams);
+        buffer.append(level + ": Exception.:" + th.toString());
+        buffer.append("\n");
+        //thorwable to string
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        th.printStackTrace(pw);
+        buffer.append(sw);
+        
+        log.debug(buffer.toString());
+
+    }
     //JDBC call depth helper methods
     //one JDBC call may call another jdbc methods e.g. getConnectionMetadata is called internally by another
     //jdbc method. Level is added to be able to recognize such internal calls.

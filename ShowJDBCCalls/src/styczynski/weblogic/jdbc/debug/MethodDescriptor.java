@@ -8,15 +8,14 @@ package styczynski.weblogic.jdbc.debug;
 public class MethodDescriptor {
 
     private String name;
-
+    private Object[] parameters;
+    
+    
     public MethodDescriptor(String name, Object[] parameters) {
         super();
         this.name = name;
         this.parameters = parameters;
     }
-
-    private Object[] parameters;
-
 
     public void setName(String name) {
         this.name = name;
@@ -39,14 +38,19 @@ public class MethodDescriptor {
 
         result.append("[");
         result.append("name=" + getName() + ", ");
-        result.append("parameters=[");
-        for (int i = 0; i < getParameters().length; i++) {
-            result.append(getParameters()[i]);
-            if (i < getParameters().length - 1)
-                result.append(", ");
+        
+        if (this.parameters == null) {
+            result.append("parameters=(none)"); 
+        } else {
+            result.append("parameters=[");
+            for (int i = 0; i < getParameters().length; i++) {
+                result.append(getParameters()[i]);
+                if (i < getParameters().length - 1)
+                    result.append(", ");
+            }
+            result.append("]");            
         }
-        result.append("]]");
-
+        result.append("]");
         return result.toString();
     }
 }

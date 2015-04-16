@@ -18,3 +18,5 @@
 * fixed issue with debug log even with debug disabled
 0.4.6
 * added exception reporting - logger does not print stack trace
+* fixed name of one of methods starting state machine - executeBatch (was: exacuteBatch)
+* fixed toString in MethodDescriptor - empty array caused NPE

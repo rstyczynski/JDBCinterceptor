@@ -69,7 +69,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
     //logger uses class name to make possible deplyment of multiple interceptors with own log files
     private Log log = LogFactory.getLog(this.getClass());
 
-    //TODO Check if loggers with the same name are safe in multithreaded environmant
+    //TODO Check if loggers with the same name are safe in multithreaded environment
     //     
     
     //TODO Externalize connfigurables
@@ -194,6 +194,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             int level = levelIncrease();
 
             processInvocation("preInvokeCallback", level, currentObject, currentMethod, currentParams, null);
+            
         } catch (Throwable th) {
             log.error("Error processing preInvokeCallback", th);
             //added exception logging as logger does not print stack trace
@@ -377,16 +378,25 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
                 getFsmState().setTimer(new ExecutionTimer());
             }
 
-            //process state transition
-            JDBCcallFSM nextState =
-                currentState.process(getFsmState(), executedObject, executedMethod, executedParameter, callBack);
+
+            //TODO: Move currentState.process to postInvoke. Change state should be in post invoke, after real execution of operation.
+            
+            //
+            // ******** process state transition ******** 
+            // ******** process state transition ******** 
+            // ******** process state transition ******** 
+            //
+            JDBCcallFSM nextState = currentState.process(getFsmState(), executedObject, executedMethod, executedParameter, callBack);
             if (debugDetailed)
                 log.debug(level + ": " + "Info: " + "State processing completed. Next state:" + nextState);
 
-
+            //TODO Move nextState.isTimeMeasurementStopPoint() to postInvoke handler
             //stop time measurement if configured for next state
             //next state retruend from processor means that processing is in the the next state
             //current event (invocation) moved processing from stateA->stateB
+            //
+            //It's the right place of stopping time measurement. Do not move it to physical execution of 
+            //pre* command for the nextState. System now is in the next stage.
             if (nextState.isTimeMeasurementStopPoint()) {
                 ExecutionTimer timer = (ExecutionTimer) getFsmState().getTimer();
 

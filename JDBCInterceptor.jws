@@ -28,5 +28,6 @@
    <list n="listOfChildren">
       <hash><url n="URL" path="ShowJDBCCalls/ShowJDBCCalls.jpr"/></hash>
       <hash><url n="URL" path="ShowJDBCState/ShowJDBCState.jpr"/></hash>
+      <hash><url n="URL" path="Workbench/Workbench.jpr"/></hash>
    </list>
 </jws:workspace>

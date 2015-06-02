@@ -1,10 +1,15 @@
 TODO
 ========================
 
-
-1. Bugs critical (0)
+1. Bugs critical (3)
 ========================
--> (none)
+c1) Remove "toLowerCase()" from executedMethod.toLowerCase().startsWith("prepare"). This takes CPU time. 
+Check exact characters used in methd name and use this. Method name is dependednt on compiled java code, 
+and cannot change, thus there is not reason to do toLowerCase().
+
+Release2 - requires reengineering of state machine approach
+c2) Move currentState.process() to postInvoke. Change state should be in post invoke, after real execution of operation.
+c3) Move nextState.isTimeMeasurementStopPoint() to postInvoke handler
 
 2. Security (4)
 ========================
@@ -70,9 +75,14 @@ m4) Add possibility to filter requests
         -> Implement it in willProcess method (hold check)
         -> hold should be kept in ThreadLocal
             
-4. Bugs not critical (1)
+4. Bugs not critical (2)
 ========================
 i1) Find out why level may become negative
+i2) Time measurement is started before SQL PREPARE command and stopped after EXECUTE. It's possible that 
+application logic does something else in between, what will influence measured time. This is a by design 
+behavior, but should be somehow handled. Possibly it's good to add time measurement for both full cycle, 
+and execution only.
+
 
 5. DONE
 -> Change method name lookups from list to hashmap. Lookup time will be dramatically lower.

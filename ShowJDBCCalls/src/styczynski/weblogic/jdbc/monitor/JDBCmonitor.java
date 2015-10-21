@@ -20,8 +20,11 @@ import styczynski.weblogic.jdbc.debug.JDBCcallFSM;
 import styczynski.weblogic.jdbc.debug.JDBCcallFSMstate;
 import styczynski.weblogic.jdbc.debug.MethodDescriptor;
 import styczynski.weblogic.jdbc.debug.NotificationDescriptor;
+import styczynski.weblogic.jdbc.debug.StateExecutionTimer;
 import styczynski.weblogic.jdbc.debug.StateInterface;
 import styczynski.weblogic.jdbc.debug.report.ExecutionAlert;
+import styczynski.weblogic.jdbc.debug.report.ExecutionHistogram;
+import styczynski.weblogic.jdbc.debug.report.TopHistogramMap;
 
 /**
  * WebLogic JDBC interceptor reporting SQL executions lasting for more than defined threashold.
@@ -52,20 +55,9 @@ import styczynski.weblogic.jdbc.debug.report.ExecutionAlert;
  *
  * @version 0.4
  */
+@SuppressWarnings("deprecation")
 public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
 
-    //SQL execution time threshold
-    private static long sqlMaxExecutionTime = 1000;
-
-    //Number of alerts to keep per thread
-    private static int topAlertsToStore = 50;
-
-    //debug control
-    private static boolean printHeadersAlways = true; //print headers for each interception
-    private static boolean debugNormal = false;
-    private static boolean debugDetailed = false;
-
-    //logger
     //logger uses class name to make possible deplyment of multiple interceptors with own log files
     private Log log = LogFactory.getLog(this.getClass());
 
@@ -100,6 +92,41 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
     //          store metrics in ThreadLocal
     //              Problem: it's not possible to access JVM ThreadLocal collection
     //              Solutiuon: push metrics from time to time to LinkedBlockingDeque()
+    
+    //TODO to support prepared statement preprepared in different
+    //     thread/call it's necessary to maintain map sql_text=map(ps)
+    
+    //TODO Decide if unwrapping is necessary in current code.
+    //     Current flow does not use result object to correlate events
+    //     It is assumed that full invocation chain (prepare, confiugre, execute)
+    //     is done during one call on the same thread.
+
+    //TODO
+    // Unwrapping is necessary in case of tracing preapred statements objects
+    // not necessary now
+    //            //unwrap
+    //            if (isOnList(Constants.statementUnwrapObjectList, executedObject)) {
+    //                if (currentObject instanceof weblogic.jdbc.wrapper.PreparedStatement) {
+    //                    weblogic.jdbc.wrapper.PreparedStatement wrappedPS =
+    //                        (weblogic.jdbc.wrapper.PreparedStatement) currentObject;
+    //                    PreparedStatement psOrg = (PreparedStatement) wrappedPS.getVendorObj();
+    //                    executedObject = psOrg.getClass().getName();
+    //                }
+    //                if (debugNormal) printUnwrapInfo(level, "executedObject:", executedObject);
+    //            }
+    //
+    //
+    //            //unwrap result
+    //            if (returnedObject != null && isOnList(Constants.statementUnwrapObjectList, returnedObject)) {
+    //
+    //                if (currentResult instanceof weblogic.jdbc.wrapper.PreparedStatement) {
+    //                    weblogic.jdbc.wrapper.PreparedStatement wrappedPS =
+    //                        (weblogic.jdbc.wrapper.PreparedStatement) currentResult;
+    //                    PreparedStatement psOrg = (PreparedStatement) wrappedPS.getVendorObj();
+    //                    returnedObject = psOrg.getClass().getName();
+    //                }
+    //                if (debugNormal)  printUnwrapInfo(level, "resultObject:", returnedObject);
+    //            }
 
 
     //FSM state variable
@@ -121,116 +148,268 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
     //#3 styczynski.weblogic.jdbc.monitor.JDBCmonitor3@e0c135d@[ACTIVE] ExecuteThread: '1' for queue: 'weblogic.kernel.Default (self-tuning)'
     //
     //Thread local value is initialized once. 
-    private ThreadLocal <JDBCcallFSMstate>fsmStateThreadLocal = new ThreadLocal <JDBCcallFSMstate>() {
-        protected JDBCcallFSMstate initialValue() {
-        
-            if (debugNormal)
-                printMethodHeader(levelCurrent(), "initializeState");
-            
-            JDBCcallFSMstate result = new JDBCcallFSMstate();
+    private ThreadLocal <JDBCcallFSMstate>fsmStateThreadLocal = 
+        new ThreadLocal <JDBCcallFSMstate>() {
+            protected JDBCcallFSMstate initialValue() {
+                if (CFG.debugNormal)
+                    printMethodHeader("initializeState");
                 
-// initialization moved to constructor
-//            result.setTimer(null);
-//            result.setCurrentState(JDBCcallFSM.INITIAL);
-//            result.setProcessedStates(new HashMap<StateInterface, Boolean>());
-//            result.setLasted(new Long(0));
-//            result.setStatement("(none)");
-//            result.setModifiers(new LinkedList<MethodDescriptor>());
-//            result.setNotification(null);
-  
-            //thread is enough as a key, but I'll keep reference to a interceptor class
-            //it makes possible to derive data source name
-            String thisInstance = JDBCmonitor.this.toString() + "@" + Thread.currentThread().getName();
-            JDBCmonitor.jdbcGlobalState.put(thisInstance, result);
+                JDBCcallFSMstate result = new JDBCcallFSMstate();
+                    
+                //thread is enough as a key, but I'll keep reference to a interceptor class
+                //it makes possible to derive assiciated data source name
+                //this information will be displayed on a web interface or in logs
+                String thisInstance = JDBCmonitor.this.toString() + "@" + Thread.currentThread().getName();
+                JDBCmonitor.jdbcGlobalState.put(thisInstance, result);
+                    
+                if (CFG.debugNormal)
+                    printMethodHeader("initializeState completed");
                 
-            if (debugNormal)
-                printMethodHeader(levelCurrent(), "initializeState completed");
-            
-            return result;
-        }
+                return result;
+            }
     };
     private JDBCcallFSMstate getFsmState() {
-        return fsmStateThreadLocal.get();
+        return (JDBCcallFSMstate)fsmStateThreadLocal.get();
     }
-//    CRITICAL - there is no setter - it's created only once when thread is started
-//    private void setFsmState(JDBCcallFSMstate fsmState) {
-//        fsmStateThreadLocal.set(fsmState);
-//    }
 
-    //TODO to support prepared statement preprepared in different
-    //thread/call it's necessary to maintain map sql_text=map(ps)
-
-    //CRITICAL Must be local thread
-    //jdbc call depth. kept out of getFsmStateNotThreadSafe() by intension
-    private ThreadLocal <Integer>level = new ThreadLocal <Integer>() {
+    //CRITICAL Must be local thread. JDBC call depth. Kept out of getFsmStateNotThreadSafe() by intension
+    private ThreadLocal <Integer>threadLevel = new ThreadLocal <Integer>() {
         protected Integer initialValue() { 
-            return 1;
+            return 0;
         }
     };
 
     //CRITICAL TODO - verify that this does not affect performance of the system
+    //Rather not. It's ued only during thread creation to add new entry
+    //After theat client (web) reads this map. Only reads.
+    //
     //status map - interface to reporting interfaces
     static private ConcurrentHashMap<String, JDBCcallFSMstate> jdbcGlobalState =
         new ConcurrentHashMap<String, JDBCcallFSMstate>();
+    
     public static ConcurrentHashMap<String, JDBCcallFSMstate> getJdbcGlobalState() {
         return jdbcGlobalState;
     }
 
     public JDBCmonitor() {
-        //moved to thread local init
-        //initializeState();
+        //FSM state initialization moved to thread local init
+        //WLS uses the same interceptor instance to handle all threads. 
+        //No instance level variables may be used.
     }
 
     //WebLogic JDBC interceptor method
-    public Object preInvokeCallback(Object currentObject, String currentMethod,
-                                    Object[] currentParams) throws SQLException {
+    //called before JDBC call
+    //
+    //Sequence: pre -> jdbc -> post
+    //
+    public Object preInvokeCallback(Object jdbcObject, String jdbcMethod, Object[] jdbcParams) throws SQLException {
 
+        final String interceptorStage = "preInvokeCallback";
+            
+        final String   executedObject = jdbcObject != null ? jdbcObject.getClass().getName() : "(none)";
+        final String   executedMethod = jdbcMethod != null ? jdbcMethod : "(none)";
+        final Object[] executedParameter = jdbcParams;
+
+        log.debug("preInvokeCallback:" + executedObject + ":" + executedMethod);
+
+        StateInterface currentState = null;
         try {
-            //critical take fsm state from a map
-            //getFsmStateNotThreadSafe() = fsmSharedlState.get(this.toString());
+            currentState = getFsmState().getCurrentState();
+            
+            boolean headerPrinted = false;
+            if ((CFG.debugNormal || CFG.debugDetailed) && CFG.printHeadersAlways) {
+                printMethodHeader("pre:" + currentState);
+                headerPrinted = true;
+            }
+            
+            if ((CFG.debugNormal || CFG.debugDetailed) && CFG.printHeadersAlways) {
+                printMethodHeader(currentState, executedObject, executedMethod, executedParameter);
+                headerPrinted = true;
+            }
+            
+            boolean processCommand = currentState.willProcess(getFsmState(), executedObject, executedMethod, executedParameter, interceptorStage);
+            if (!processCommand) {
+                //added handler for unexpected INITIAL state - e.g. in case of execute w/o close
+                processCommand = JDBCcallFSM.INITIAL.willProcess(getFsmState(), executedObject, executedMethod, executedParameter, interceptorStage);
+                if(processCommand) {
+                    log.debug("Initial command in unexpected place. Was previous operation executed w/o proper close? Initializing state for this new flow.");
+                    currentState = getFsmState().initialize();
+                }
+            }
+            
+            if (processCommand) {
+                if (!headerPrinted) {
+                    if (CFG.debugNormal) {
+                        printMethodHeader(interceptorStage);
+                        printMethodHeader(currentState, executedObject, executedMethod, executedParameter);
+                        headerPrinted = true;
+                    }
+                }
+                if ((CFG.debugNormal || CFG.debugDetailed) && CFG.printHeadersAlways)
+                log.debug("Info: " + "Current interception has execution handler for state : " +
+                          currentState + ". Will proceed.");
 
-            //not needed. ThreadLocal will be always initialized
-            //initializeStateIfNeeded();
-            int level = levelIncrease();
-
-            processInvocation("preInvokeCallback", level, currentObject, currentMethod, currentParams, null);
+                //measure state processing time                        
+                if( getFsmState().getStatesTiming().containsKey(currentState)){
+                    getFsmState().getStatesTiming().get(currentState).start();
+                    log.debug("timing start:" + currentState);
+                } else { //first time mesaurement - initialize
+                    log.debug("timing init:" + currentState);
+                    getFsmState().getStatesTiming().put(currentState, new StateExecutionTimer());
+                    getFsmState().getStatesTiming().get(currentState).start();
+                }
+                
+                //start time measurment if configured for this state
+                if (currentState.isTimeMeasurementStartPoint()) {
+                    ExecutionTimer timer = new ExecutionTimer();
+                    log.debug("Starting timer " + timer);
+                    getFsmState().setTimer(timer);
+                }
+            } else {
+                log.debug("Nothing to do in preInvokeCallback." + ", " + executedObject + ":" + executedMethod);
+            }
             
         } catch (Throwable th) {
             log.error("Error processing preInvokeCallback", th);
-            //added exception logging as logger does not print stack trace
-            String executedObject = currentObject != null ? currentObject.getClass().getName() : "(none)";
-            String executedMethod = currentMethod != null ? currentMethod : "(none)";
-            Object[] executedParameter = currentParams;
-            String returnedObject = "(none)";
-            printException("preInvokeCallback", levelCurrent(), executedObject, executedMethod, executedParameter, returnedObject, th);
+            printException("preInvokeCallback", currentState, executedObject, executedMethod, executedParameter, "none", th);
         }
         return null;
     }
 
     //WebLogic JDBC interceptor method
-    public void postInvokeCallback(Object currentObject, String currentMethod, Object[] currentParams,
-                                   Object currentResult) throws SQLException {
+    public void postInvokeCallback(Object jdbcObject, String jdbcMethod, 
+                                   Object[] jdbcParams, Object jdbcResult) throws SQLException {
+        
+        final String interceptorStage = "postInvokeCallback";
+            
+        
+        final String   executedObject = jdbcObject != null ? jdbcObject.getClass().getName() : "(none)";
+        final String   executedMethod = jdbcMethod != null ? jdbcMethod : "(none)";
+        final Object[] executedParameter = jdbcParams;
+        final String   returnedObject = jdbcResult != null ? jdbcResult.getClass().getName() : "(none)";
+        
+        log.debug("postInvokeCallback:" + executedObject + ":" + executedMethod + ", "  + Arrays.toString(executedParameter) + ", " + returnedObject);
+        
+        StateInterface currentState = null;
         try {
-            //critical take fsm state from a map
-            //getFsmStateNotThreadSafe() = fsmSharedlState.get(this.toString());
+            currentState = getFsmState().getCurrentState();
+            
+            boolean headerPrinted = false;
+            if ((CFG.debugNormal || CFG.debugDetailed) && CFG.printHeadersAlways) {
+                printMethodHeader("post:" + currentState);
+                headerPrinted = true;
+            }
 
-            //not needed. ThreadLocal will be always initialized
-            //initializeStateIfNeeded();
-            int level = levelCurrent();
+            if ((CFG.debugNormal || CFG.debugDetailed) && CFG.printHeadersAlways) {
+                printMethodHeader(currentState, executedObject, executedMethod, executedParameter, returnedObject);
+                headerPrinted = true;
+            }
+            
+            boolean processCommand = currentState.willProcess(getFsmState(), executedObject, executedMethod, executedParameter, interceptorStage);
+            if (processCommand) {
 
-            processInvocation("postInvokeCallback", level, currentObject, currentMethod, currentParams, currentResult);
+                //measure state finalization time
+                if( getFsmState().getStatesTiming().containsKey(currentState)){
+                    getFsmState().getStatesTiming().get(currentState).stop();
+                    log.debug("timing stop:" + currentState);
+                } else { //first time mesaurement - not possible
+                    log.debug("State time measurement not initialized in post state:" + currentState);
+                }
+                
+                JDBCcallFSM nextState = currentState.process(getFsmState(), executedObject, executedMethod, executedParameter, interceptorStage);
+                
+                if (CFG.debugDetailed)
+                    log.debug("State processing completed. Next state:" + nextState);
 
+
+                if (nextState.isTimeMeasurementStopPoint()) {
+                    ExecutionTimer timer = (ExecutionTimer) getFsmState().getTimer();
+                    log.debug("Stopping timer: " + timer);
+                    
+                    if (timer != null) {
+                        getFsmState().setLasted(timer.getLasted());
+                        getFsmState().setTimer(null);
+                    } else {
+                        log.warn("Requested time measurement but timer was not started. Error in definition of state machine.");
+                    }
+                }
+                               
+                if (nextState.isTimeMeasurementStopPoint()) {
+//                    NotificationDescriptor notification = getFsmState().getNotification();
+//                    if (debugDetailed)
+//                        log.debug("Notification raised:" + notification);
+
+                    Long lasted = getFsmState().getLasted();
+                    if (CFG.debugDetailed)
+                        log.debug("Lasted=" + lasted);
+
+                    if (lasted == null) {
+                        log.debug("Time measurement stop requested, but has not be started.");
+                        lasted = 0L;
+                    }
+
+                    //TODO6) Put histogram here.
+                    String statement = getFsmState().getStatement();
+                    TopHistogramMap topHistogram = getFsmState().getTopHistograms();
+                    if ( topHistogram.containsKey(statement)){
+                        //statement already known
+                        ExecutionHistogram histogram = (ExecutionHistogram)topHistogram.get(statement);
+                        histogram.add(lasted);
+                    } else {
+                        //new statement
+                        ExecutionHistogram histogram = new ExecutionHistogram(CFG.getHistogramSlots(), CFG.getHistogramMax());
+                        histogram.add(lasted);
+                        topHistogram.put(statement, histogram);
+                    }
+
+                    if (lasted >= CFG.sqlMaxExecutionTime) {
+                        if (CFG.debugDetailed)
+                            log.debug("Time bigger than defined:" + lasted);
+
+                        //it's a good way to pass data. no need to copy data
+                        ExecutionAlert alert = new ExecutionAlert(getFsmState().getStatement(), lasted, getModifiers(), getFsmState().getStatesTiming().toString());
+                        getFsmState().getTopAlerts().addAlert(alert);
+
+                        //TODO Externalize Alert reporting
+                        //     Use logger with dedicated log destination
+                        StringBuffer buffer = new StringBuffer();
+
+                        buffer.append("SQL execution lasted more than expected.");
+                        buffer.append("\n");
+                        buffer.append("|------lasted [ms]:" + lasted);
+                        buffer.append("\n");
+                        buffer.append("|------SQL:" + getFsmState().getStatement());
+                        buffer.append("\n");
+
+
+                        if (getModifiers() != null && getModifiers().size() > 0) {
+                            buffer.append("|------with following modifiers:");
+                            buffer.append("\n");
+                            for (int i = 0; i < getModifiers().size(); i++) {
+                                buffer.append("       \\------" + i + getModifiers().get(i).toString());
+                                buffer.append("\n");
+                            }
+                        }
+                        log.warn(buffer.toString());
+                    }
+                    //clearNotification();
+                }
+                
+                getFsmState().setCurrentState(nextState);
+                //if next state is FINAL -> initialize state
+                if (nextState.equals(JDBCcallFSM.FINAL)) {
+                    if (CFG.debugNormal)
+                        log.debug("FINAL state detected. Resetting state.");
+                    getFsmState().initialize();   
+                }
+                
+            } else {
+                log.debug("Nothing to do in postInvokeCallback." + ", " + executedObject + ":" + executedMethod);
+            }
+                        
         } catch (Throwable th) {
             log.error("Error processing postInvokeCallback", th);
-            
-            //added exception logging as logger does not print stack trace
-            String executedObject = currentObject != null ? currentObject.getClass().getName() : "(none)";
-            String executedMethod = currentMethod != null ? currentMethod : "(none)";
-            Object[] executedParameter = currentParams;
-            String returnedObject = currentResult != null ? currentResult.getClass().getName() : "(none)";
-            printException("postInvokeCallback", levelCurrent(), executedObject, executedMethod, executedParameter, returnedObject, th);
-        } finally {
-            levelDecrease();    
+            printException("postInvokeCallback", currentState, executedObject, executedMethod, executedParameter, returnedObject, th);
         }
     }
 
@@ -247,371 +426,49 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
         //     Decission: execution status reporting must be implemented
 
         //TODO Add execution result - to repoert exceptional finalization
-        try {
-            //critical take fsm state from a map
-            //getFsmStateNotThreadSafe() = fsmSharedlState.get(this.toString());
 
+        log.debug("postInvokeExceptionCallback: " + ", " + currentObject + ":" + currentMethod);
+        StateInterface currentState = null;
+        try {
+            //measure state invocation time
+            //EXPERIMENTAL
+            currentState = getFsmState().getCurrentState();
+            if( getFsmState().getStatesTiming().containsKey(currentState)){
+                getFsmState().getStatesTiming().get(currentState).stop();
+                log.debug("timing stop:" + currentState);
+            } else { //first time mesaurement - not possible
+                log.debug("State time measurement not initialized in post state:" + currentState);
+            }
+            
+            
             String callBack = "postInvokeExceptionCallback";
             //initializeStateIfNeeded();
-            int level = levelCurrent();
-            printMethodHeader(level, callBack);
+            printMethodHeader(callBack);
+            
         } catch (Throwable th) {
-            log.error("Error processing postInvokeExceptionCallback", th);
+            log.debug("Error processing postInvokeExceptionCallback", th);
             
             //added exception logging as logger does not print stack trace
             String executedObject = currentObject != null ? currentObject.getClass().getName() : "(none)";
             String executedMethod = currentMethod != null ? currentMethod : "(none)";
             Object[] executedParameter = currentParams;
             String returnedObject = "(none)";
-            printException("preInvokeCallback", levelCurrent(), executedObject, executedMethod, executedParameter, returnedObject, th);
+            printException("preInvokeCallback", currentState, executedObject, executedMethod, executedParameter, returnedObject, th);
 
-        } 
-
-        levelDecrease();
-    }
-
-    //main logic for WebLogic JDBC interceptor
-    //(a) initializes FSM if needed
-    //(b) calls FSM processor
-    private void processInvocation(String callBack, int level, Object currentObject, String currentMethod,
-                                   Object[] currentParams, Object currentResult) {
-
-        boolean headerPrinted = false;
-        if ((debugNormal || debugDetailed) && printHeadersAlways) {
-            printMethodHeader(level, callBack);
-            headerPrinted = true;
         }
-
-        String executedObject = currentObject != null ? currentObject.getClass().getName() : "(none)";
-        String executedMethod = currentMethod != null ? currentMethod : "(none)";
-        //Object executedParameter = currentParams.length > 0 ? currentParams[0] : "(none)";
-        Object[] executedParameter = currentParams;
-        String returnedObject = currentResult != null ? currentResult.getClass().getName() : "(none)";
-        
-        try {
-            if ((debugNormal || debugDetailed) && printHeadersAlways) {
-                printMethodHeader(level, executedObject, executedMethod, executedParameter);
-                headerPrinted = true;
-            }
-
-            //TODO Decide if unwrapping is necessary in current code.
-            //     Current flow does not use result object to correlate events
-            //     It is assumed that full invocation chain (prepare, confiugre, execute)
-            //     is done during one call on the same thread.
-
-            //TODO
-            // Unwrapping is necessary in case of tracing preapred statements objects
-            // not necessary now
-            //            //unwrap
-            //            if (isOnList(Constants.statementUnwrapObjectList, executedObject)) {
-            //                if (currentObject instanceof weblogic.jdbc.wrapper.PreparedStatement) {
-            //                    weblogic.jdbc.wrapper.PreparedStatement wrappedPS =
-            //                        (weblogic.jdbc.wrapper.PreparedStatement) currentObject;
-            //                    PreparedStatement psOrg = (PreparedStatement) wrappedPS.getVendorObj();
-            //                    executedObject = psOrg.getClass().getName();
-            //                }
-            //                if (debugNormal) printUnwrapInfo(level, "executedObject:", executedObject);
-            //            }
-            //
-            //
-            //            //unwrap result
-            //            if (returnedObject != null && isOnList(Constants.statementUnwrapObjectList, returnedObject)) {
-            //
-            //                if (currentResult instanceof weblogic.jdbc.wrapper.PreparedStatement) {
-            //                    weblogic.jdbc.wrapper.PreparedStatement wrappedPS =
-            //                        (weblogic.jdbc.wrapper.PreparedStatement) currentResult;
-            //                    PreparedStatement psOrg = (PreparedStatement) wrappedPS.getVendorObj();
-            //                    returnedObject = psOrg.getClass().getName();
-            //                }
-            //                if (debugNormal)  printUnwrapInfo(level, "resultObject:", returnedObject);
-            //            }
-
-
-            //process state machine transition
-            processState(callBack, level, headerPrinted, executedObject, executedMethod, executedParameter);
-
-        //Internal exception of interceptor CANNOT be thrown to intercepted method.
-        //Interceptor must be invisible for the system
-        } catch (Throwable th) {
-            //always log exception
-            log.error("Error processing intercepted method", th);
-            //added exception logging as logger does not print stack trace
-            printException(callBack, level, executedObject, executedMethod, executedParameter, returnedObject, th);
-        }
-    }
-
-    //FSM processor
-    //(a) checks if current event fits current state
-    //(b) executes transition logic
-    //(c) updates FSM state
-    //(d) receives alert from transition logic
-    private void processState(String callBack, int level, boolean headerPrinted, String executedObject,
-                              String executedMethod, Object[] executedParameter) {
-
-        JDBCcallFSM currentState = (JDBCcallFSM) getFsmState().getCurrentState();
-        boolean processCommand = false;
-        if (currentState.willProcess(getFsmState(), executedObject, executedMethod, executedParameter, callBack)) {
-            processCommand = true;
-        } else {
-            //added handler for unexpected INITIAL state - e.g. in case of execute w/o close
-            processCommand = JDBCcallFSM.INITIAL.willProcess(getFsmState(), executedObject, executedMethod, executedParameter, callBack);
-            if(processCommand) {
-                log.debug(level + "Initial command in unexpected place. Was previous operation executed w/o proper close? Initializing state for this new flow.");
-                currentState = getFsmState().initialize();
-                
-            }
-        }
-        if (processCommand) {
-            if (!headerPrinted) {
-                if (debugNormal) {
-                    printMethodHeader(level, callBack);
-                    printMethodHeader(level, executedObject, executedMethod, executedParameter);
-                    headerPrinted = true;
-                }
-            }
-                if ((debugNormal || debugDetailed) && printHeadersAlways)
-                log.debug(level + ": " + "Info: " + "Current interception has execution handler for state : " +
-                          currentState + ". Will proceed.");
-
-            //start time measurment if configured for this state
-            if (currentState.isTimeMeasurementStartPoint()) {
-                getFsmState().setTimer(new ExecutionTimer());
-            }
-
-
-            //TODO: Move currentState.process to postInvoke. Change state should be in post invoke, after real execution of operation.
-            
-            //
-            // ******** process state transition ******** 
-            // ******** process state transition ******** 
-            // ******** process state transition ******** 
-            //
-            JDBCcallFSM nextState = currentState.process(getFsmState(), executedObject, executedMethod, executedParameter, callBack);
-            if (debugDetailed)
-                log.debug(level + ": " + "Info: " + "State processing completed. Next state:" + nextState);
-
-            //TODO Move nextState.isTimeMeasurementStopPoint() to postInvoke handler
-            //stop time measurement if configured for next state
-            //next state retruend from processor means that processing is in the the next state
-            //current event (invocation) moved processing from stateA->stateB
-            //
-            //It's the right place of stopping time measurement. Do not move it to physical execution of 
-            //pre* command for the nextState. System now is in the next stage.
-            if (nextState.isTimeMeasurementStopPoint()) {
-                ExecutionTimer timer = (ExecutionTimer) getFsmState().getTimer();
-
-                if (timer != null) {
-                    getFsmState().setLasted(timer.getLasted());
-                    //getFsmStateNotThreadSafe().setTimer(null);
-                } else {
-                    log.warn("Requested time measurement but timer was not started. Error in definition of state machine.");
-                }
-            }
-
-            //if next state is FINAL -> initialize state
-            if (nextState.equals(JDBCcallFSM.FINAL)) {
-                if (debugNormal)
-                    log.debug("FINAL state detected. Resetting state.");
-                
-                //NONONO -> I'm keeping alerts here
-                //CRITICAL ThreadLocal must be cleared after completion of processing
-                //fsmStateThreadLocal.remove();
-                //thread local init will do
-                initializeState();
-            }
-
-            //check if notification flag was set by FSM
-            //notofication is triggered after finishing FSM
-            //this logic need to check if execution result should be reported to operator
-            if (isNotificationRaised()) {
-                NotificationDescriptor notification = getFsmState().getNotification();
-                if (debugDetailed)
-                    log.debug("Notification raised:" + notification);
-
-                Long lasted = getFsmState().getLasted();
-                if (debugDetailed)
-                    log.debug("Lasted=" + lasted);
-
-                if (lasted == null) {
-                    log.debug("Raised alert, but has no time stop flag defined in state machine");
-                    ExecutionTimer timer = (ExecutionTimer) getFsmState().getTimer();
-                    lasted = timer.getLasted();
-                    getFsmState().setLasted(lasted);
-                }
-
-                if (lasted >= sqlMaxExecutionTime) {
-                    if (debugDetailed)
-                        log.debug("Time bigger than defined:" + lasted);
-
-                    //it's a good way to pass data. no need to copy data
-                    ExecutionAlert alert = new ExecutionAlert(getFsmState().getStatement(), lasted, getModifiers());
-                    getFsmState().getTopAlerts().addAlert(alert);
-
-                    //TODO Externalize Alert reporting
-                    //     Use logger with dedicated log destination
-                    StringBuffer buffer = new StringBuffer();
-
-                    buffer.append("SQL execution lasted more than expected.");
-                    buffer.append("\n");
-                    buffer.append("|------lasted [ms]:" + lasted);
-                    buffer.append("\n");
-                    buffer.append("|------SQL:" + getFsmState().getStatement());
-                    buffer.append("\n");
-
-
-                    if (getModifiers() != null && getModifiers().size() > 0) {
-                        buffer.append("|------with following modifiers:");
-                        buffer.append("\n");
-                        for (int i = 0; i < getModifiers().size(); i++) {
-                            buffer.append("       \\------" + i + ": " + getModifiers().get(i).toString());
-                            buffer.append("\n");
-                        }
-                    }
-                    log.warn(buffer.toString());
-                }
-                clearNotification();
-            }
-
-            //cleanup when state machine reached initial state
-            //NONONO! Why? none->none is possible
-            //handle it by notification
-            //            if(nextState == JDBCcallFSM.none){
-            //                initializeState();
-            //            } else {
-            getFsmState().setCurrentState(nextState);
-
-            if (debugNormal)
-                printState(level);
-        } else {
-            if ((debugNormal || debugDetailed) && printHeadersAlways)
-                log.debug(level + ": " + "Info: " + "Current interception has no execution handler for state: " +
-                          currentState);
-        }
-    }
-// not needed - init of thread local will do
-//    //Conditional FSM initialization
-//    //(a) initializes FSM for a new thread
-//    //(b) initializes FSM if entry state is detected
-//    private void reinitializeStateIfNeeded(String callBack, int level, String executedObject, String executedMethod,
-//                                           Object[] executedParameter) {
-//        //Note about threading
-//
-//
-//        //---------------------
-//        //in case of spawning new thread, interceptor is not created.
-//        //old, existing interceptor class is used. The reason of this is that interceptor is
-//        //created per jdbc object - when data source is created.
-//        //
-//        //It's what you see in server log file during DataSource startup:
-//        //<Driver Interceptor class styczynski.weblogic.jdbc.debug.ShowJDBCCalls loaded.> 
-//        //
-//        //in case of failure:
-//        //<Unable to load class "styczynski.weblogic.jdbc.debug.ShowJDBCCallsC", got exception : java.lang.ClassNotFoundException: styczynski.weblogic.jdbc.debug.ShowJDBCCallsC. Driver Interception feature disabled.>
-//        initializeStateIfNeeded();
-//        if (JDBCcallFSM.INITIAL.willProcess(getFsmState(), executedObject, executedMethod, executedParameter, callBack)) {
-//            if (debugNormal)
-//                log.debug(level + ": " + "Info: " + "Initial state processing condition. Will do.");
-//            initializeState();
-//        }
-//    }
-
-// not neede. init is done by thread local.
-//    //Conditional FSM initialization
-//    //(a) initializes FSM for a new thread
-//    private void initializeStateIfNeeded() {
-//        //Note about threading
-//        //---------------------
-//        //in case of spawning new thread, interceptor is not created.
-//        //old, existing interceptor class is used. The reason if this is that interceptor is
-//        //created per jdbc object - possibly when connection is created.
-//        //ThreadLocal varaibles are identified by thread name - changing thread gives unitialized variables.
-//
-//
-//        //replaced from ThreadLocal to map indexed by class identifier. class is assigned with jndbc thread pool objects
-//        //threads are changing....
-//        if (getFsmState() == null) {
-//            initializeState();
-//        }
-//    }
-
-    //FSM initialization moved to thread local init
-    public StateInterface initializeState() {
-
-        StateInterface result = null;
-
-        try {
-
-            if (debugNormal)
-                printMethodHeader(levelCurrent(), "initializeState");
-
-//          CRITICAL. State initialisation is not conditional. Always create new state.
-//          NONONO! Moved to thread initialisation
-//            if (getFsmState() == null) {
-//                setFsmState(new JDBCcallFSMstate());
-//            }
-            
-            //getFsmStateNotThreadSafe() is always initialized by declaration
-            //            //Thread local may NOT be initialized
-            //            if (getFsmStateNotThreadSafe() == null) {
-            //                getFsmStateNotThreadSafe() = new JDBCcallFSMstate();
-            //
-            //                //connect fsm state with fsm execution class
-            //                //fsmSharedlState.put(this.toString(), getFsmStateNotThreadSafe());
-            //            }
-
-            //timer is initialized in process method. Reset if timer here.
-       
-            getFsmState().setTimer(null);
-
-            getFsmState().setCurrentState(JDBCcallFSM.INITIAL);
-            getFsmState().setProcessedStates(new HashMap<StateInterface, Boolean>());
-            getFsmState().setLasted(new Long(0));
-            getFsmState().setStatement("(none)");
-            getFsmState().setModifiers(new LinkedList<MethodDescriptor>());
-            getFsmState().setNotification(null);
-
-            //clear jdbc call depth
-            //this.level.remove();
-            level.set(1);
-            //levelIncrease();
-
-            //TODO add possibility to disable global reporting. Alerting to ODL will work, but user interface not.
-            //global reporting. structure used to comunicate with user interface
-            //ment to be synchronization free
-            //String thisInstance = this.toString() + "@" + Thread.currentThread().getName();
-            //if (!JDBCmonitor.jdbcGlobalState.contains(thisInstance)) {
-            //JDBCmonitor.jdbcGlobalState.put(thisInstance, getFsmState());
-            //}
-
-            if (debugNormal)
-                printMethodHeader(levelCurrent(), "initializeState completed");
-
-        } catch (Throwable th) {
-            log.error("Can't initialize JDBC interceptor state machine.", th);
-        }
-
-        return JDBCcallFSM.INITIAL;
     }
 
 
     // getters / seters
 
     public static void setSqlMaxExecutionTime(long sqlMaxExecutionTime) {
-        JDBCmonitor.sqlMaxExecutionTime = sqlMaxExecutionTime;
+        CFG.sqlMaxExecutionTime = sqlMaxExecutionTime;
     }
 
     public static long getSqlMaxExecutionTime() {
-        return sqlMaxExecutionTime;
+        return CFG.sqlMaxExecutionTime;
     }
 
-
-    public static void setTopAlertsToStore(int topAlertsToStore) {
-        JDBCmonitor.topAlertsToStore = topAlertsToStore;
-    }
-
-    public static int getTopAlertsToStore() {
-        return topAlertsToStore;
-    }
 
     public LinkedList<MethodDescriptor> getModifiers() {
         return getFsmState().getModifiers();
@@ -632,7 +489,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
     }
 
     public void updateState(StateInterface state, boolean processed) {
-        if (debugDetailed)
+        if (CFG.debugDetailed)
             log.debug("updateState: Setting " + state + " to " + processed);
         getFsmState().getProcessedStates().put(state, processed);
     }
@@ -646,13 +503,13 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             if (states.containsKey(state)) {
                 result = (Boolean) states.get(state);
             } else {
-                if (debugDetailed)
+                if (CFG.debugDetailed)
                     log.debug("isProcessed: State " + state + " not on a status map! Adding...");
                 states.put(state, false);
                 result = false;
             }
         } else {
-            if (debugDetailed)
+            if (CFG.debugDetailed)
                 log.debug("isProcessed: State " + state + " is null!");
             result = false;
         }
@@ -665,84 +522,68 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
 
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append(level + ": " + "Exception: " + th.getMessage());
+        buffer.append("Exception: " + th.getMessage());
         buffer.append("\n");
         for (int i = 0; i < th.getStackTrace().length; i++) {
-            buffer.append(level + ": " + th.getStackTrace()[i]);
+            buffer.append(th.getStackTrace()[i]);
             buffer.append("\n");
         }
 
-        log.error(buffer.toString(), th);
+        log.debug(buffer.toString(), th);
     }
 
-
-    public static void setPrintHeadersAlways(boolean printHeadersAlways) {
-        JDBCmonitor.printHeadersAlways = printHeadersAlways;
-    }
-
-    public static boolean isPrintHeadersAlways() {
-        return printHeadersAlways;
-    }
-
-    public static void setDebugNormal(boolean debugNormal) {
-        JDBCmonitor.debugNormal = debugNormal;
-    }
-
-    public static boolean isDebugNormal() {
-        return debugNormal;
-    }
-
-    public static void setDebugDetailed(boolean debugDetailed) {
-        JDBCmonitor.debugDetailed = debugDetailed;
-    }
-
-    public static boolean isDebugDetailed() {
-        return debugDetailed;
-    }
 
     // debug support code
-    private void printMethodHeader(int level, String method) {
+    private void printMethodHeader(String method) {
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append(level + ": " + "---------------------------");
+        buffer.append("---------------------------");
         buffer.append("\n");
-        buffer.append(level + ": " + method + " on " + Thread.currentThread().getId() + ":" +
+        buffer.append(method + " on " + Thread.currentThread().getId() + ":" +
                       Thread.currentThread().getName() + " via " + this);
 
         log.debug(buffer.toString());
     }
 
-    private void printMethodHeader(int level, String executedObject, String executedMethod,
+    private void printMethodHeader(StateInterface state,
+                                   String executedObject, String executedMethod,
                                    Object[] executedParameter) {
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append(level + ": " + "----- Parameters");
+        buffer.append("----- Parameters");
         buffer.append("\n");
-        buffer.append(level + ": Object...:" + executedObject);
+        buffer.append("State...:" + state);
         buffer.append("\n");
-        buffer.append(level + ": Method...:" + executedMethod);
+        buffer.append("Object...:" + executedObject);
         buffer.append("\n");
-        buffer.append(level + ": Parameter:");
+        buffer.append("Method...:" + executedMethod);
+        buffer.append("\n");
+        buffer.append("Parameter:");
         if (executedParameter != null) {
             buffer.append("\n");
+            String parameterStr;
+            String parameterValStr;
             for (int i = 0; i < executedParameter.length; i++) {
-
-                buffer.append(level + ": \\------" + i + ": " +
-                              //Info: parameter may be set to null value.
-                              executedParameter[i] != null ? executedParameter[i].toString() :
-                              "(null)" + ", " + executedParameter[i] != null ?
-                              executedParameter[i].getClass().getName() : "(null)");
+                if (executedParameter[i] != null) {
+                    parameterStr = executedParameter[i].toString();
+                    parameterValStr = executedParameter[i].getClass().getName();
+                } else {
+                    parameterStr = "(none)";
+                    parameterValStr = "(none)";
+                }
+                
+                buffer.append("\\------" + i + ":" + parameterStr + " " + parameterValStr);
                 buffer.append("\n");
             }
         } else {
             buffer.append("(none)");
             buffer.append("\n");
         }
-        buffer.append(level + ": Modifiers:");
+        buffer.append("Modifiers:");
         if (getModifiers() != null) {
             buffer.append("\n");
             for (int i = 0; i < getModifiers().size(); i++) {
-                buffer.append(level + ": \\------" + i + ": " + getModifiers().get(i).toString());
+                buffer.append("\\------" + i + getModifiers().get(i).toString());
                 buffer.append("\n");
             }
         } else {
@@ -753,34 +594,46 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
         log.debug(buffer.toString());
     }
 
-    private void printMethodHeader(int level, String executedObject, String executedMethod, Object[] executedParameter,
+    private void printMethodHeader(StateInterface state, 
+                                   String executedObject, String executedMethod, Object[] executedParameter,
                                    String returnedObject) {
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append(level + ": " + "----- Parameters");
+        buffer.append("----- Parameters");
         buffer.append("\n");
-        buffer.append(level + ": Object...:" + executedObject);
+        buffer.append("State...:" + state);
         buffer.append("\n");
-        buffer.append(level + ": Method...:" + executedMethod);
+        buffer.append("Object...:" + executedObject);
         buffer.append("\n");
-        buffer.append(level + ": Parameter:");
+        buffer.append("Method...:" + executedMethod);
+        buffer.append("\n");
+        buffer.append("Parameter:");
 
         if (executedParameter != null) {
             buffer.append("\n");
+            String parameterStr;
+            String parameterValStr;
             for (int i = 0; i < executedParameter.length; i++) {
-                buffer.append(level + ": \\------" + i + ": " + executedParameter[i].toString() + ", " +
-                              executedParameter[i].getClass().getName());
+                if (executedParameter[i] != null) {
+                    parameterStr = executedParameter[i].toString();
+                    parameterValStr = executedParameter[i].getClass().getName();
+                } else {
+                    parameterStr = "(none)";
+                    parameterValStr = "(none)";
+                }
+                
+                buffer.append("\\------" + i + ":" + parameterStr + " " + parameterValStr);
                 buffer.append("\n");
             }
         } else {
             buffer.append("(none)");
             buffer.append("\n");
         }
-        buffer.append(level + ": Modifiers:");
+        buffer.append("Modifiers:");
         if (getModifiers() != null) {
             buffer.append("\n");
             for (int i = 0; i < getModifiers().size(); i++) {
-                buffer.append(level + ": \\------" + i + ": " + getModifiers().get(i).toString());
+                buffer.append("\\------" + i + getModifiers().get(i).toString());
                 buffer.append("\n");
             }
         } else {
@@ -788,7 +641,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             buffer.append("\n");
         }
 
-        buffer.append(level + ": Returned.:" + returnedObject);
+        buffer.append("Returned.:" + returnedObject);
         buffer.append("\n");
 
         log.debug(buffer.toString());
@@ -798,11 +651,11 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
 
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append(level + ": " + "----- Unwrapped");
+        buffer.append("----- Unwrapped");
         buffer.append("\n");
-        buffer.append(level + ": What...:" + comment);
+        buffer.append("What...:" + comment);
         buffer.append("\n");
-        buffer.append(level + ": Object...:" + unwrappedObject);
+        buffer.append("Object...:" + unwrappedObject);
         buffer.append("\n");
 
         log.debug(buffer.toString());
@@ -812,30 +665,30 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
 
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append(level + ": " + "----- State");
+        buffer.append("----- State");
         buffer.append("\n");
-        buffer.append(level + ": " + "current state:" + getFsmState().getCurrentState());
+        buffer.append("current state:" + getFsmState().getCurrentState());
         buffer.append("\n");
-        buffer.append(level + ": " + "next state(s):" + Arrays.toString(getFsmState().getCurrentState().getNextStates()));
+        buffer.append("next state(s):" + Arrays.toString(getFsmState().getCurrentState().getNextStates()));
         buffer.append("\n");
-        buffer.append(level + ": " + "statement....:" + getFsmState().getStatement());
+        buffer.append("statement....:" + getFsmState().getStatement());
         buffer.append("\n");
-        buffer.append(level + ": " + "started......:" + getFsmState().getTimer());
+        buffer.append("started......:" + getFsmState().getTimer());
         buffer.append("\n");
-        buffer.append(level + ": " + "lasted.......:" + getFsmState().getLasted());
+        buffer.append("lasted.......:" + getFsmState().getLasted());
         buffer.append("\n");
 
         log.debug(buffer.toString());
     }
 
-    private void printException(String callBack, int level, String currentObject, String currentMethod,
+    private void printException(String callBack, StateInterface currentState, String currentObject, String currentMethod,
                                 Object[] currentParams, String currentResult, Throwable th) {
         
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append(level + ": " + "----- Exception");
-        printMethodHeader(level, currentObject, currentMethod, currentParams);
-        buffer.append(level + ": Exception.:" + th.toString());
+        buffer.append("----- Exception");
+        printMethodHeader(currentState, currentObject, currentMethod, currentParams);
+        buffer.append("Exception.:" + th.toString());
         buffer.append("\n");
         //thorwable to string
         StringWriter sw = new StringWriter();
@@ -845,44 +698,6 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
         
         log.debug(buffer.toString());
 
-    }
-    //JDBC call depth helper methods
-    //one JDBC call may call another jdbc methods e.g. getConnectionMetadata is called internally by another
-    //jdbc method. Level is added to be able to recognize such internal calls.
-    private int levelIncrease() {
-//        int level = 1;
-//        Integer _level =  this.level.get();
-//        if (_level != null) {
-//            level = _level.intValue() + 1;
-//        }
-//        this.level.set(new Integer(level));
-
-        level.set(level.get() + 1);
-        if (debugDetailed)
-            log.debug("Level increase:" + level.get());
-        return level.get();
-    }
-
-    private void levelDecrease() {
-//        int level = 1;
-//        Integer _level = this.level.get();
-//        if (_level != null ) {
-//            level = _level.intValue() - 1;
-//        }
-//        this.level.set(new Integer(level));
-
-        level.set(level.get() - 1);
-        if (debugDetailed)
-            log.debug("Level decrease:" + level.get());
-    }
-
-    private int levelCurrent() {
-//        int level = 1;
-//        Integer _level = (Integer) this.level.get();
-//        if (_level != null) {
-//            level = _level.intValue();
-//        }
-        return this.level.get();
     }
 
     // helper methods

@@ -1,8 +1,11 @@
 package styczynski.weblogic.jdbc.debug.report;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import styczynski.weblogic.jdbc.debug.MethodDescriptor;
+import styczynski.weblogic.jdbc.debug.StateExecutionTimer;
+import styczynski.weblogic.jdbc.debug.StateInterface;
 
 /**
  * Object used to report execution lasting more that defined threshold.
@@ -13,19 +16,22 @@ public class ExecutionAlert {
     private long lasted;
     LinkedList<MethodDescriptor> modifiers;
     long timestamp;
+    String statesTiming;
 
     public ExecutionAlert(String statement, long lasted) {
         this.statement = statement;
         this.lasted = lasted;
         this.modifiers = new LinkedList<MethodDescriptor>();
+        this.statesTiming = "";
         this.timestamp = System.currentTimeMillis();
     }
 
-    public ExecutionAlert(String statement, long lasted, LinkedList<MethodDescriptor> modifiers) {
+    public ExecutionAlert(String statement, long lasted, LinkedList<MethodDescriptor> modifiers, String statesTiming) {
         this.statement = statement;
         this.lasted = lasted;
         this.modifiers = modifiers;
         this.timestamp = System.currentTimeMillis();
+        this.statesTiming = statesTiming;
     }
 
     public ExecutionAlert(String statement, long lasted, LinkedList<MethodDescriptor> modifiers, long timestamp) {
@@ -33,6 +39,15 @@ public class ExecutionAlert {
         this.lasted = lasted;
         this.modifiers = modifiers;
         this.timestamp = timestamp;
+    }
+
+
+    public void setStatesTiming(String statesTiming) {
+        this.statesTiming = statesTiming;
+    }
+
+    public String getStatesTiming() {
+        return statesTiming;
     }
 
     public void setStatement(String statement) {

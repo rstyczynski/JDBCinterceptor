@@ -8,8 +8,11 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.servlet.ServletConfig;
@@ -20,10 +23,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import styczynski.weblogic.jdbc.debug.JDBCcallFSMstate;
 import styczynski.weblogic.jdbc.debug.report.ExecutionAlert;
+import styczynski.weblogic.jdbc.debug.report.ExecutionHistogram;
 import styczynski.weblogic.jdbc.monitor.CFG;
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
-public class LatestAlerts extends HttpServlet {
+public class LatestHistograms extends HttpServlet {
     private static final String CONTENT_TYPE = "text/html; charset=UTF-8";
 
     public void init(ServletConfig config) throws ServletException {
@@ -38,7 +42,7 @@ public class LatestAlerts extends HttpServlet {
 
         final Enumeration<String> threadsEnum = Collections.enumeration(JDBCmonitor.getJdbcGlobalState().keySet());
 
-        LinkedList<ExecutionAlert> allAlerts = new LinkedList<ExecutionAlert>();
+        HashMap<Object, ExecutionHistogram> allHitograms = new HashMap<Object, ExecutionHistogram>();
 
         while (threadsEnum.hasMoreElements()) {
 
@@ -47,87 +51,56 @@ public class LatestAlerts extends HttpServlet {
             JDBCcallFSMstate fsmState = JDBCmonitor.getJdbcGlobalState().get(thread);
 
             //get alerts from this thread
-            if (fsmState.getTopAlerts() != null) {
-                ExecutionAlert[] alerts=fsmState.getTopAlerts().getAlerts();
-                for(int i=0; i<alerts.length;i++){
-                    if (alerts[i]!=null)
-                        allAlerts.add(alerts[i]);
-                }
+            if (fsmState.getTopHistograms() != null) {
                 
+                Iterator histIter = fsmState.getTopHistograms().getReadBuffer().keySet().iterator();
+                while (histIter.hasNext()){
+                    Map.Entry entry = (Map.Entry)histIter.next();
+                    if (allHitograms.containsKey(entry.getKey())) {
+                        allHitograms.get(entry.getKey()).merge((ExecutionHistogram)entry.getValue());
+                    } else {
+                        allHitograms.put(entry.getKey(), (ExecutionHistogram)entry.getValue() );
+                    }
+                }    
             }
-            
         }
 
-        //get alerts from threads
-        LinkedList<ExecutionAlert> alerts = new LinkedList<ExecutionAlert>();
 
-        //sort by execution time
-        Collections.sort(allAlerts, new Comparator<ExecutionAlert>() {
-            @Override
-            public int compare(ExecutionAlert o1, ExecutionAlert o2) {
-                Long myTime = o1.getTimestamp();
-                Long otherTime = o2.getTimestamp();
-                return otherTime.compareTo(myTime);
-
-            }
-        });
-
-        boolean showAll = false;
-        if(!showAll) {
-            for (int i = 0; i < CFG.getTopAlertsToStore(); i++) {
-                if (allAlerts.size() >= 1) {
-                    ExecutionAlert alert = allAlerts.remove();
-    
-                    alerts.add(alert);
-                }
-            }
-        } else {
-            alerts = allAlerts;
-        }
-        
         out.println("</br>");
         out.println("<div class=\"tabletitle\">" + "Latest " + CFG.getTopAlertsToStore() + " alerts" + "</div>");
 
         out.println("<table class=\"datatable\" id=\"genericTableFormtable\">");
         out.println("<tbody>");
         out.println("<tr>");
-        out.println("<th>" + "lasted" + "</th>");
         out.println("<th>" + "statement" + "</th>");
-        out.println("<th>" + "time" + "</th>");
-        out.println("<th>" + "modifiers" + "</th>");
-        out.println("<th>" + "state timing" + "</th>");
-        
-        //        //sort by execution time
-        //        Collections.sort(alerts, new Comparator<ExecutionAlert>() {
-        //             @Override
-        //             public int compare(ExecutionAlert o1, ExecutionAlert o2) {
-        //                Long myTime = o1.getLapsed();
-        //                Long otherTime = o2.getLapsed();
-        //                return otherTime.compareTo(myTime);
-        //
-        //             }
-        //           }
-        //        );
+        out.println("<th>" + "min" + "</th>");
+        out.println("<th>" + "max" + "</th>");
+        out.println("<th>" + "avg" + "</th>");
+        out.println("<th>" + "cnt" + "</th>");
+        out.println("<th>" + "sum" + "</th>");
+        out.println("<th>" + "histogram" + "</th>");
 
         SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy 'at' hh:mm:ss");
         sdf.setTimeZone(TimeZone.getTimeZone("CET"));
         
-        ListIterator itr = alerts.listIterator();
+        Iterator itr = allHitograms.keySet().iterator();
         int rowNo = 0;
         while (itr.hasNext()) {
-            ExecutionAlert alert = (ExecutionAlert) itr.next();
+            Map.Entry entry = (Map.Entry)itr.next();    
+            ExecutionHistogram histogram = (ExecutionHistogram) entry.getValue();
             rowNo++;
             if (rowNo % 2 != 0) {
                 out.println("<tr class=\"rowEven\">");
             } else {
                 out.println("<tr class=\"rowOdd\">");
             }
-            out.println("<td>" + alert.getLasted() + "</td>");
-            out.println("<td width=\"600px\">" + alert.getStatement() + "</td>");
-
-            out.println("<td>" + sdf.format(alert.getTimestamp()) + "</td>");
-            out.println("<td>" + alert.getModifiers() + "</td>");
-            out.println("<td>" + alert.getStatesTiming() + "</td>");
+            out.println("<td width=\"600px\">" + entry.getKey() + "</td>");
+            out.println("<td>" + histogram.getMin() + "</td>");
+            out.println("<td>" + histogram.getAvg() + "</td>");
+            out.println("<td>" + histogram.getMax() + "</td>");
+            out.println("<td>" + histogram.getCnt() + "</td>");
+            out.println("<td>" + histogram.getSum() + "</td>");
+            out.println("<td>" + histogram.getASCIIChart() + "</td>");
             out.println("</tr>");
         }
         out.println("</tbody>");

@@ -1,7 +1,7 @@
 package styczynski.weblogic.jdbc.debug;
 
 /**
- * Execution timer. Start time measurement at time of creation.
+ * Execution timer. Starts time measurement at time of creation.
  */
 public class ExecutionTimer {
     long start;

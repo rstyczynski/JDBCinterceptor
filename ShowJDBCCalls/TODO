@@ -1,22 +1,16 @@
 TODO
 ========================
 
-1. Bugs critical (3)
+1. Bugs critical (5)
 ========================
-c1) Remove "toLowerCase()" from executedMethod.toLowerCase().startsWith("prepare"). This takes CPU time. 
-Check exact characters used in methd name and use this. Method name is dependednt on compiled java code, 
-and cannot change, thus there is not reason to do toLowerCase().
-
-Release2 - requires reengineering of state machine approach
-c2) Move currentState.process() to postInvoke. Change state should be in post invoke, after real execution of operation.
-c3) Move nextState.isTimeMeasurementStopPoint() to postInvoke handler
+c4) Add state EXCEPTION handling failed statements. Easiest way to check is to execute call dbms_lock.sleep(?) 
+with non integer parameter
+c5) ClearGlobalStatus in debug module executes clear() on jdbcGlobal status object.
+-> it have to enumerate threads and cleanup data on per thread level
+-> current solution breaks thread to global statu communication, as localthread state object is created and linked during initialisation of jdbc interceptor 
 
 2. Security (4)
 ========================
-s1) Remove possibility to run SQL command
-    a) only permitted operator (by role: admin)
-    hint: no - just remove it. It's not necessary, and too risky
-    
 s2) Do not collect SQL arguments
     a) do not write SQL arguments to log ile
     hint: control by dynamic parameter - same solution as for debug flag
@@ -28,14 +22,19 @@ s3) Add data masking for sensitive fields e.g. passwords
     (a) for SQL text in execute*(sql)
     (b) for parameters of prepared statement
 
-s4) Protect switching debug
-    a) only permitted operator (by role)
-    b) possibly set should be done with some verification check e.g. sum of current hour and day - to ensure that enabled by intension
-    
-3. Manageability (5)
+
+3. Manageability (6)
 ========================
+m6) Add execution tiem histogram of sql recognized by it's test.
+    -> add histogram next to place where alert is raised
+    OK -> add array of histogram objects to JDBCcallFSMstate
+        OK -> aray must be limited to latest N sql texts
+        
+    -> add histogram reading to Web
+    
 m5) Read configuration from file
     (a) read cfg file from domain config directory
+            http://stackoverflow.com/questions/6664021/external-properties-file-with-weblogic
     (b) read cfg file from classpath
     (c) cfg file is a properites file
     (d) use java.util.Properties load(stream) operation
@@ -75,15 +74,28 @@ m4) Add possibility to filter requests
         -> Implement it in willProcess method (hold check)
         -> hold should be kept in ThreadLocal
             
-4. Bugs not critical (2)
+4. Bugs not critical (3)
 ========================
+i3) logging on log.debug is not printed in WLS log file. 
+
+5. DONE
+-> Change method name lookups from list to hashmap. Lookup time will be dramatically lower.
+0.5
+c1) Remove "toLowerCase()" from executedMethod.toLowerCase().startsWith("prepare"). This takes CPU time. 
+Check exact characters used in methd name and use this. Method name is dependednt on compiled java code, 
+and cannot change, thus there is not reason to do toLowerCase().
+Release2 - requires reengineering of state machine approach
+c2) Move currentState.process() to postInvoke. Change state should be in post invoke, after real execution of operation.
+c3) Move nextState.isTimeMeasurementStopPoint() to postInvoke handler
+s1) Remove possibility to run SQL command
+    a) only permitted operator (by role: admin)
+    hint: no - just remove it. It's not necessary, and too risky
+    
+s4) Protect switching debug
+    a) only permitted operator (by role)
+    b) possibly set should be done with some verification check e.g. sum of current hour and day - to ensure that enabled by intension
 i1) Find out why level may become negative
 i2) Time measurement is started before SQL PREPARE command and stopped after EXECUTE. It's possible that 
 application logic does something else in between, what will influence measured time. This is a by design 
 behavior, but should be somehow handled. Possibly it's good to add time measurement for both full cycle, 
 and execution only.
-
-
-5. DONE
--> Change method name lookups from list to hashmap. Lookup time will be dramatically lower.
-

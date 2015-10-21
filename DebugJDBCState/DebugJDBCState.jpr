@@ -46,7 +46,6 @@
       <value n="oracle.modeler.bmmigrate.management.Migration" v="11.1.1.1.0"/>
       <value n="oracle.tip.tools.ide.fabric.addin.SCAProjectMigrator" v="11.1.1.1.0.12"/>
       <value n="oracle.tip.tools.ide.workflow.addin.TaskFormMigratorAddin" v="12.1.3.0.0"/>
-      <value n="oracle.tip.tools.ide.workflow.addin.WorkflowProjectMigrator" v="12.1.2.0.0"/>
       <value n="oracle.toplink.workbench.addin.migration.PersistenceProjectMigrator" v="11.1.1.1.0"/>
       <value n="oracle.toplink.workbench.addin.migration.TopLinkProjectMigrator" v="11.1.1.1.0"/>
    </hash>
@@ -65,9 +64,16 @@
       <string v="oracle.tip.tools.ide.ess.addin.ESSContentSetProvider/ess-content"/>
       <string v="oracle.jdeveloper.model.PathsConfiguration/cepContentSet"/>
    </list>
-   <value n="defaultPackage" v="jdbcstateshow"/>
+   <value n="defaultPackage" v="project1"/>
    <hash n="oracle.ide.model.DependencyConfiguration">
       <list n="dependencyList">
+         <hash>
+            <hash n="dependable">
+               <url n="sourceOwnerURL" path="../JDBCInterceptor.jws"/>
+               <url n="sourceURL" path="../ShowJDBCState/ShowJDBCState.jpr"/>
+            </hash>
+            <value n="recognizerId" v="oracle.jdeveloper.library"/>
+         </hash>
          <hash>
             <hash n="dependable">
                <url n="sourceOwnerURL" path="../JDBCInterceptor.jws"/>
@@ -88,12 +94,11 @@
    </hash>
    <hash n="oracle.jdeveloper.compiler.OjcConfiguration">
       <value n="internalEncoding" v="UTF8"/>
-      <value n="target" v="1.5"/>
       <value n="webIANAEncoding" v="UTF-8"/>
    </hash>
    <hash n="oracle.jdeveloper.deploy.dt.DeploymentProfiles">
       <hash n="profileDefinitions">
-         <hash n="showJDBCState">
+         <hash n="webapp">
             <hash n="appletArchives"/>
             <hash n="appletFiles">
                <value n="autoInclude" v="true"/>
@@ -104,7 +109,7 @@
             <hash n="archiveOptions">
                <value n="hasManifest" v="false"/>
             </hash>
-            <value n="enterpriseAppName" v="showJDBCState"/>
+            <value n="enterpriseAppName" v="webapp"/>
             <hash n="fileGroups">
                <list n="groups">
                   <hash>
@@ -163,11 +168,11 @@
                   </hash>
                </list>
             </hash>
-            <url n="jarURL" path="deploy/showJDBCState.war"/>
+            <url n="jarURL" path="deploy/webapp.war"/>
             <value n="profileClass" v="oracle.jdeveloper.deploy.war.WarProfile"/>
-            <value n="profileName" v="showJDBCState"/>
+            <value n="profileName" v="webapp"/>
          </hash>
-         <hash n="wlsJDBCmonitorConsole">
+         <hash n="wlsJDBCmonitorDebug">
             <hash n="appletArchives"/>
             <hash n="appletFiles">
                <value n="autoInclude" v="true"/>
@@ -178,7 +183,7 @@
             <hash n="archiveOptions">
                <value n="hasManifest" v="false"/>
             </hash>
-            <value n="enterpriseAppName" v="wlsJDBCmonitorConsole"/>
+            <value n="enterpriseAppName" v="wlsJDBCmonitorDebug"/>
             <hash n="fileGroups">
                <list n="groups">
                   <hash>
@@ -237,44 +242,30 @@
                   </hash>
                </list>
             </hash>
-            <url n="jarURL" path="deploy/wlsJDBCmonitorConsole.war"/>
+            <url n="jarURL" path="deploy/wlsJDBCmonitorDebug.war"/>
             <value n="profileClass" v="oracle.jdeveloper.deploy.war.WarProfile"/>
-            <value n="profileName" v="wlsJDBCmonitorConsole"/>
+            <value n="profileName" v="wlsJDBCmonitorDebug"/>
          </hash>
       </hash>
       <list n="profileList">
-         <string v="showJDBCState"/>
-         <string v="wlsJDBCmonitorConsole"/>
+         <string v="webapp"/>
+         <string v="wlsJDBCmonitorDebug"/>
       </list>
    </hash>
    <hash n="oracle.jdeveloper.model.J2eeSettings">
-      <value n="j2eeWebAppName" v="JDBCmonitor"/>
-      <value n="j2eeWebContextRoot" v="JDBCmonitor"/>
-   </hash>
-   <hash n="oracle.jdeveloper.model.PathsConfiguration">
-      <hash n="javaContentSet">
-         <list n="pattern-filters">
-            <string v="+**"/>
-         </list>
-         <list n="url-path">
-            <url path="src/"/>
-         </list>
-      </hash>
+      <value n="j2eeWebAppName" v="DebugJDBCState"/>
+      <value n="j2eeWebContextRoot" v="DebugJDBCState"/>
    </hash>
    <hash n="oracle.jdevimpl.config.JProjectLibraries">
       <list n="exportedReferences">
          <hash>
-            <value n="id" v="Servlet Runtime"/>
+            <value n="id" v="JSP Runtime"/>
             <value n="isJDK" v="false"/>
          </hash>
       </list>
       <list n="libraryReferences">
          <hash>
             <value n="id" v="JSP Runtime"/>
-            <value n="isJDK" v="false"/>
-         </hash>
-         <hash>
-            <value n="id" v="Servlet Runtime"/>
             <value n="isJDK" v="false"/>
          </hash>
       </list>

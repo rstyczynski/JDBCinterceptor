@@ -26,8 +26,75 @@
       <string v="oracle.jdeveloper.model.PathsConfiguration/ResourceBundlesContentSet"/>
    </list>
    <list n="listOfChildren">
+      <hash><url n="URL" path="DebugJDBCState/DebugJDBCState.jpr"/></hash>
       <hash><url n="URL" path="ShowJDBCCalls/ShowJDBCCalls.jpr"/></hash>
       <hash><url n="URL" path="ShowJDBCState/ShowJDBCState.jpr"/></hash>
       <hash><url n="URL" path="Workbench/Workbench.jpr"/></hash>
+      <hash><url n="URL" path="Workbench-ServerSide/Workbench-ServerSide.jpr"/></hash>
    </list>
+   <hash n="oracle.jdeveloper.deploy.dt.DeploymentProfiles">
+      <hash n="profileDefinitions">
+         <hash n="jdbcMonitor">
+            <hash n="archiveOptions">
+               <value n="hasManifest" v="false"/>
+            </hash>
+            <url n="earURL" path="deploy/jdbcMonitor.ear"/>
+            <value n="enterpriseAppName" v="jdbcMonitor"/>
+            <hash n="fileGroups">
+               <list n="groups">
+                  <hash>
+                     <list n="contributors">
+                        <hash>
+                           <value n="type" v="9"/>
+                        </hash>
+                     </list>
+                     <value n="displayName" v="Application Descriptors"/>
+                     <hash n="filters">
+                        <list n="rules">
+                           <hash>
+                              <value n="pattern" v="**"/>
+                              <value n="type" v="0"/>
+                           </hash>
+                        </list>
+                     </hash>
+                     <value n="internalName" v="ear-metainf"/>
+                     <value n="type" v="1"/>
+                  </hash>
+                  <hash>
+                     <value n="displayName" v="Application Libraries"/>
+                     <hash n="filters">
+                        <list n="rules">
+                           <hash>
+                              <value n="pattern" v="**"/>
+                              <value n="type" v="0"/>
+                           </hash>
+                        </list>
+                     </hash>
+                     <value n="internalName" v="libraries"/>
+                     <value n="targetWithinJar" v="lib"/>
+                     <value n="type" v="3"/>
+                  </hash>
+               </list>
+            </hash>
+            <value n="profileClass" v="oracle.jdeveloper.deploy.ear.EarProfile"/>
+            <value n="profileName" v="jdbcMonitor"/>
+            <hash n="properties">
+               <value n="" v=""/>
+            </hash>
+         </hash>
+      </hash>
+      <list n="profileList">
+         <string v="jdbcMonitor"/>
+      </list>
+   </hash>
+   <hash n="oracle.jdeveloper.model.PathsConfiguration">
+      <hash n="ApplicationSrcContentSet">
+         <list n="pattern-filters">
+            <string v="+**"/>
+         </list>
+         <list n="url-path">
+            <url path="src/"/>
+         </list>
+      </hash>
+   </hash>
 </jws:workspace>

@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.ListIterator;
 
+import styczynski.weblogic.jdbc.monitor.CFG;
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
 /**
@@ -69,7 +70,7 @@ Adding one more
 [sql=sql9,lasted=9,modifiers=[],timestamp=1427230523817]
  */
 public class TopAlertsArray  {
-    private int maxSize = JDBCmonitor.getTopAlertsToStore();
+    private int maxSize = CFG.getTopAlertsToStore();
     private ExecutionAlert[] alertList;
     private int cnt = 0;
     

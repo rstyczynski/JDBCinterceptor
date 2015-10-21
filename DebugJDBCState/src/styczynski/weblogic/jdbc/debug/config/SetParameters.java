@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 import styczynski.weblogic.jdbc.debug.show.HTMLhelper;
+import styczynski.weblogic.jdbc.monitor.CFG;
 
 public class SetParameters extends HttpServlet {
     private static final String CONTENT_TYPE = "text/html; charset=UTF-8";
@@ -23,10 +24,10 @@ public class SetParameters extends HttpServlet {
         // SQL execution threadshold
         long sqlMaxExecutionTime = JDBCmonitor.getSqlMaxExecutionTime();
         // number of alerts to be kept in memory
-        int topAlertsToStore = JDBCmonitor.getTopAlertsToStore();
-        boolean printHeadersAlways = JDBCmonitor.isPrintHeadersAlways();
-        boolean debugNormal = JDBCmonitor.isDebugNormal();
-        boolean debugDetailed = JDBCmonitor.isDebugDetailed();
+        int topAlertsToStore = CFG.getTopAlertsToStore();
+        boolean printHeadersAlways = CFG.isPrintHeadersAlways();
+        boolean debugNormal = CFG.isDebugNormal();
+        boolean debugDetailed = CFG.isDebugDetailed();
         boolean resetGlobalStatus = false;
         
         
@@ -44,16 +45,16 @@ public class SetParameters extends HttpServlet {
             
             if (request.getParameter("printHeadersAlways") != null) {
                 printHeadersAlways = Boolean.valueOf(request.getParameter("printHeadersAlways")).booleanValue();
-                JDBCmonitor.setPrintHeadersAlways(printHeadersAlways);
+                CFG.setPrintHeadersAlways(printHeadersAlways);
             }
             if (request.getParameter("debugNormal") !=null) {
                 debugNormal = Boolean.valueOf(request.getParameter("debugNormal")).booleanValue();
-                JDBCmonitor.setDebugNormal(debugNormal);
+                CFG.setDebugNormal(debugNormal);
             }
             
             if(request.getParameter("debugDetailed") !=null) {
                 debugDetailed = Boolean.valueOf(request.getParameter("debugDetailed")).booleanValue();
-                JDBCmonitor.setDebugDetailed(debugDetailed);
+                CFG.setDebugDetailed(debugDetailed);
             }
 
             if(request.getParameter("resetGlobalStatus") != null) {
@@ -74,10 +75,10 @@ public class SetParameters extends HttpServlet {
         out.println("<p>Current JDBC interceptor configuration:</p>");
         
         out.println("SqlMaxExecutionTime:" + JDBCmonitor.getSqlMaxExecutionTime() + "</br>");
-        out.println("TopAlertsToStore:" + JDBCmonitor.getTopAlertsToStore() + "</br>");
-        out.println("PrintHeadersAlways:" + JDBCmonitor.isPrintHeadersAlways() + "</br>");
-        out.println("DebugNormal:" + JDBCmonitor.isDebugNormal() + "</br>");
-        out.println("DebugDetailed:" + JDBCmonitor.isDebugDetailed()+ "</br>");
+        out.println("TopAlertsToStore:" + CFG.getTopAlertsToStore() + "</br>");
+        out.println("PrintHeadersAlways:" + CFG.isPrintHeadersAlways() + "</br>");
+        out.println("DebugNormal:" + CFG.isDebugNormal() + "</br>");
+        out.println("DebugDetailed:" + CFG.isDebugDetailed()+ "</br>");
         
         //TODO Experimental
         if (resetGlobalStatus) {

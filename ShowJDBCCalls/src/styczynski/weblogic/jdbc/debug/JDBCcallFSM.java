@@ -3,6 +3,7 @@ package styczynski.weblogic.jdbc.debug;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import styczynski.weblogic.jdbc.monitor.CFG;
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
 
@@ -49,8 +50,8 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                     //proceesed(state);
 
-                    if (JDBCmonitor.isDebugDetailed())
-                        LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed process:" + this);
+                    if (CFG.isDebugDetailed())
+                        LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed process:" + this);
                 }
 
                 return result;
@@ -76,7 +77,7 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
         INITIAL {
 
             public boolean isTimeMeasurementStartPoint() {
-                return true;
+                return false;
             };
 
             public boolean isTimeMeasurementStopPoint() {
@@ -88,15 +89,15 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
                 return nextStates;
             }
 
-            public boolean willProcess(JDBCcallFSMstate state, String executedObject, String executedMethod,
+            public boolean willProcess(JDBCcallFSMstate _xxx_state, String executedObject, String executedMethod,
                                        Object[] executedParameter, String callBack) {
                 boolean result = false;
 
                 if (JDBCmonitor.isInSet(Constants.connectionObjectSet, executedObject)) {
-                    if (JDBCmonitor.isInSet(Constants.connectionMethodPrePostSet, executedMethod + "_" + callBack)) {
+                    if (JDBCmonitor.isInSet(Constants.connectionMethodSet, executedMethod)) {
                         result = true;
-                        if (JDBCmonitor.isDebugDetailed())
-                            LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed willProcess:" + this);
+                        if (CFG.isDebugDetailed())
+                            LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed willProcess:" + this);
                     }
                 }
 
@@ -127,24 +128,12 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                     //proceesed(state);
 
-                    if (JDBCmonitor.isDebugDetailed())
-                        LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed process:" + this);
+                    if (CFG.isDebugDetailed())
+                        LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed process:" + this);
                 }
 
                 return result;
             }
-
-//            public void proceesed(ShowJDBCCalls state) {
-//                state.updateState(this, true);
-//            }
-//
-//            public void reset(ShowJDBCCalls state) {
-//                state.updateState(this, false);
-//            }
-//
-//            public boolean isProceesed(ShowJDBCCalls state) {
-//                return state.isProcessed(this);
-//            }
 
             public boolean hasMultipleSates() {
                 return this.getNextStates().length > 1;
@@ -160,7 +149,7 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
             }
             
             public boolean isTimeMeasurementStartPoint() {
-                return false;
+                return true;
             };
 
             public boolean isTimeMeasurementStopPoint() {
@@ -169,22 +158,20 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
             public boolean willProcess(JDBCcallFSMstate state, String executedObject, String executedMethod,
                                        Object[] executedParameter, String callBack) {
-                boolean result = true;
+                boolean result = false;
 
                 //do not handle execute* w/o parameters
                 if (JDBCmonitor.isInSet(Constants.statementObjectSet, executedObject) 
                     &&
-                    executedMethod.toLowerCase().startsWith("execute")
+                    ( executedMethod.startsWith("execute") || executedMethod.startsWith("Execute") )
                     &&
                     executedParameter.length == 0 //no parameters execute is only for prepared statements
-                    &&
-                    callBack.toLowerCase().startsWith("post")
                 ) {
-                    result = false;
+                    result = true;
                 }
 
-                if (JDBCmonitor.isDebugDetailed())
-                    LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed willProcess:" + this);
+                if (CFG.isDebugDetailed())
+                    LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed willProcess:" + this);
 
                 return result;
             }
@@ -199,11 +186,9 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                     if (JDBCmonitor.isInSet(Constants.statementObjectSet, executedObject) 
                         &&
-                        executedMethod.toLowerCase().startsWith("execute")
+                        ( executedMethod.startsWith("execute") || executedMethod.startsWith("Execute") )
                         &&
                         executedParameter.length > 0 
-                        &&
-                        callBack.toLowerCase().startsWith("post")
                     ) {
 
                         //CRITICAL: save captured SQL
@@ -217,8 +202,8 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                     //proceesed(state);
 
-                    if (JDBCmonitor.isDebugDetailed())
-                        LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed process:" + this);
+                    if (CFG.isDebugDetailed())
+                        LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed process:" + this);
                 }
 
                 return result;
@@ -251,7 +236,7 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
             }
 
             public boolean isTimeMeasurementStartPoint() {
-                return false;
+                return true;
             };
 
             public boolean isTimeMeasurementStopPoint() {
@@ -265,8 +250,8 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
                 //execute all commands but not createStatement
                 result = true;
                 
-                if (JDBCmonitor.isDebugDetailed())
-                    LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed willProcess:" + this);
+                if (CFG.isDebugDetailed())
+                    LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed willProcess:" + this);
 
                 return result;
             }
@@ -277,29 +262,24 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                 if (willProcess(state, executedObject, executedMethod, executedParameter, callBack)) {
 
-                    state.setCurrentState(this);
+                    //state.setCurrentState(this);
 
-                    if (JDBCmonitor.isInSet(Constants.statementObjectSet, executedObject) &&
-                    JDBCmonitor.isInSet(Constants.statementMethodPostSet, executedMethod + "_" + callBack) &&
-                        executedMethod.toLowerCase().startsWith("execute")) {
-
-                        //CRITICAL
-                        state.setNotification(new NotificationDescriptor("jdbc", "execute", "finished:" + this));
-                        
+                    if (JDBCmonitor.isInSet(Constants.statementObjectSet, executedObject) 
+                        &&
+                        JDBCmonitor.isInSet(Constants.statementMethodSet, executedMethod) 
+                        &&
+                        ( executedMethod.startsWith("execute") || executedMethod.startsWith("Execute") )
+                        ) {
                         result = JDBCcallFSM.EXECUTED;                            
                     } else {
-
-                        //CRITICAL
-                        if ( callBack.startsWith("pre"))
-                            state.getModifiers().add(new MethodDescriptor(executedMethod, executedParameter));
-                        
-                        result = JDBCcallFSM.CONFIGURED;
+                        state.getModifiers().add(new MethodDescriptor(executedMethod, executedParameter));
+                        result = JDBCcallFSM.CONFIGURED;                        
                     }
 
                     //proceesed(state);
 
-                    if (JDBCmonitor.isDebugDetailed())
-                        LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed process:" + this);
+                    if (CFG.isDebugDetailed())
+                        LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed process:" + this);
                 }
 
                 return result;
@@ -332,7 +312,7 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
             
 
             public boolean isTimeMeasurementStartPoint() {
-                return false;
+                return true;
             };
 
             public boolean isTimeMeasurementStopPoint() {
@@ -344,8 +324,8 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
                 boolean result = false;
 
                 result = true;
-                if (JDBCmonitor.isDebugDetailed())
-                    LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed willProcess:" + this);
+                if (CFG.isDebugDetailed())
+                    LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed willProcess:" + this);
 
                 return result;
             }
@@ -359,23 +339,15 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
                     state.setCurrentState(this);
 
                     if (JDBCmonitor.isInSet(Constants.statementObjectSet, executedObject) &&
-                    JDBCmonitor.isInSet(Constants.statementMethodPostSet, executedMethod + "_" + callBack)) {
-
-                        //CRITICAL
-                        state.setNotification(new NotificationDescriptor("jdbc", "execute", "finished:" + this));
-
+                        JDBCmonitor.isInSet(Constants.statementMethodSet, executedMethod)) {
                         result = JDBCcallFSM.EXECUTED;                            
                     } else {
-                        //CRITICAL
-                        if ( callBack.startsWith("pre"))
-                            state.getModifiers().add(new MethodDescriptor(executedMethod, executedParameter));
+                        state.getModifiers().add(new MethodDescriptor(executedMethod, executedParameter));
                         result = JDBCcallFSM.CONFIGURED;
                     }
 
-                    //proceesed(state);
-
-                    if (JDBCmonitor.isDebugDetailed())
-                        LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed process:" + this);
+                    if (CFG.isDebugDetailed())
+                        LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed process:" + this);
                 }
 
                 return result;
@@ -419,10 +391,10 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
                 boolean result = false;
 
                 if (JDBCmonitor.isInSet(Constants.statementObjectSet, executedObject)) {
-                    if (JDBCmonitor.isInSet(Constants.statementMethodClosePrePostSet, executedMethod + "_" + callBack)) {
+                    if (JDBCmonitor.isInSet(Constants.statementMethodCloseSet, executedMethod )) {
                         result = true;
-                        if (JDBCmonitor.isDebugDetailed())
-                            LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed willProcess:" + this);
+                        if (CFG.isDebugDetailed())
+                            LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed willProcess:" + this);
                     }
                 }
 
@@ -437,7 +409,7 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                     state.setCurrentState(this);
 
-                    if (executedMethod.toLowerCase().equals("close")) {
+                    if ( executedMethod.startsWith("close") || executedMethod.startsWith("Close") ) {
                         result = JDBCcallFSM.CLOSED;
                     } else {
                         result = this;
@@ -445,24 +417,12 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                     //proceesed(state);
 
-                    if (JDBCmonitor.isDebugDetailed())
-                        LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed process:" + this);
+                    if (CFG.isDebugDetailed())
+                        LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed process:" + this);
                 }
 
                 return result;
             }
-
-//            public void proceesed(JDBCcallFSMstate state) {
-//                state.updateState(this, true);
-//            }
-//
-//            public void reset(JDBCcallFSMstate state) {
-//                state.updateState(this, false);
-//            }
-//
-//            public boolean isProceesed(JDBCcallFSMstate state) {
-//                return state.isProcessed(this);
-//            }
 
             public boolean hasMultipleSates() {
                 return this.getNextStates().length > 1;
@@ -508,28 +468,12 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                     //proceesed(state);
 
-                    if (JDBCmonitor.isDebugDetailed())
-                        LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed process:" + this);
+                    if (CFG.isDebugDetailed())
+                        LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed process:" + this);
                 }
 
                 return result;
             }
-
-//            public void proceesed(ShowJDBCCalls state) {
-//                state.updateState(this, true);
-//            }
-//
-//            public void reset(ShowJDBCCalls state) {
-//                state.updateState(this, false);
-//            }
-//
-//            public boolean isProceesed(ShowJDBCCalls state) {
-//                return state.isProcessed(this);
-//            }
-//
-//            public boolean hasMultipleSates() {
-//                return this.getNextStates().length > 1;
-//            }
 
         }, 
         
@@ -566,8 +510,8 @@ import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
                     //proceesed(state);
 
-                    if (JDBCmonitor.isDebugDetailed())
-                        LogFactory.getLog("weblogic.jdbc.debug.fsm").debug("Executed process:" + this);
+                    if (CFG.isDebugDetailed())
+                        LogFactory.getLog("styczynski.weblogic.jdbc.monitor.fsm").debug("Executed process:" + this);
                 }
 
                 return result;

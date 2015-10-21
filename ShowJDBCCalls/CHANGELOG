@@ -1,22 +1,30 @@
+0.5
+* major refactoring of the code.
+* added time measurement per each processing stage
+* fixed issues with proper measurement of "execute" in different scenarios (statement, prepered statement, prepared statement w/o parameters)
+* added debug web module with ability to configure and run SQL
+* run SQL and configure not available in main monitor web module
+* eliminated toLowerCase() from sql method checking methods
+0.4.6
+* added exception reporting - logger does not print stack trace
+* fixed name of one of methods starting state machine - executeBatch (was: exacuteBatch)
+* fixed toString in MethodDescriptor - empty array caused NPE
+0.4.5
+* fixed issue with debug log even with debug disabled
+0.4.4
+* updated documentation in area of ODL configuration
+0.4.3
+* added JDBCmonitor-logging.xml
+* disabled default debug
+0.4.2
+* object/method lookup changed from list to set
+0.4.1
+* added license
+* added documentation
 0.4
 * fixed state machine state storage. Switched to ThreadLocal as WLS uses the same interceptor object for different threads
 * added handler for statement operation w/o close operation. In each stage of processing, INITIAL state is expected now
 * moved state initialization to constructor
 * fixed isses with overriting console param1 by param2, param3
 * modified status page to show state instance and thread
-0.4.1
-* added license
-* added documentation
-0.4.2
-* object/method lookup changed from list to set
-0.4.3
-* added JDBCmonitor-logging.xml
-* disabled default debug
-0.4.4
-* updated documentation in area of ODL configuration
-0.4.5
-* fixed issue with debug log even with debug disabled
-0.4.6
-* added exception reporting - logger does not print stack trace
-* fixed name of one of methods starting state machine - executeBatch (was: exacuteBatch)
-* fixed toString in MethodDescriptor - empty array caused NPE
+

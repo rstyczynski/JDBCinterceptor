@@ -1,0 +1,34 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5">
+  
+  <servlet>
+    <servlet-name>HeaderDump</servlet-name>
+    <servlet-class>workbenchserver.HeaderDump</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>HeaderDump</servlet-name>
+    <url-pattern>/headerdump</url-pattern>
+  </servlet-mapping>
+  
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Workbench-ServerSide</web-resource-name>
+      <url-pattern>secured.jsp</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>Admin</role-name>
+    </auth-constraint>
+  </security-constraint>
+  
+  <login-config>
+    <auth-method>BASIC</auth-method>
+  </login-config>
+  
+  <security-role>
+    <role-name>Admin</role-name>
+  </security-role>
+
+
+</web-app>

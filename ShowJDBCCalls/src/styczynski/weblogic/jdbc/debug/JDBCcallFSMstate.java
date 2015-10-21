@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import styczynski.weblogic.jdbc.debug.report.TopAlertsArray;
+import styczynski.weblogic.jdbc.debug.report.TopHistogramMap;
+import styczynski.weblogic.jdbc.monitor.CFG;
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
 /**
@@ -17,9 +19,13 @@ public class JDBCcallFSMstate {
     ExecutionTimer timer;
     long lasted = 0;
     NotificationDescriptor notification = null;
-    TopAlertsArray topAlerts = new TopAlertsArray(JDBCmonitor.getTopAlertsToStore());
+    TopAlertsArray topAlerts = new TopAlertsArray(CFG.getTopAlertsToStore());
+    HashMap<StateInterface, StateExecutionTimer> statesTiming;
     
     long timeUpdated;
+    
+    //DONE6) add histogram object here
+    TopHistogramMap topHistograms = new TopHistogramMap(CFG.getTopHistogramsToStore());
     
     public JDBCcallFSMstate(){
         initialize();
@@ -33,10 +39,24 @@ public class JDBCcallFSMstate {
         this.setStatement("(none)");
         this.setModifiers(new LinkedList<MethodDescriptor>());
         this.setNotification(null);
+        this.setStatesTiming(new HashMap<StateInterface, StateExecutionTimer>());
         
         return JDBCcallFSM.INITIAL;
     }
 
+
+    public void setStatesTiming(HashMap<StateInterface, StateExecutionTimer> statesTiming) {
+        this.statesTiming = statesTiming;
+    }
+
+    public HashMap<StateInterface, StateExecutionTimer> getStatesTiming() {
+        return statesTiming;
+    }
+
+    public HashMap<StateInterface, StateExecutionTimer> cloneStatesTiming() {
+        return (HashMap<StateInterface, StateExecutionTimer>)statesTiming.clone();
+    }
+    
     public void setCurrentState(StateInterface currentState) {
         this.currentState = currentState;
         this.timeUpdated = System.currentTimeMillis();;
@@ -123,6 +143,10 @@ public class JDBCcallFSMstate {
 
     public long getTimeUpdated() {
         return timeUpdated;
+    }
+
+    public TopHistogramMap getTopHistograms() {
+        return topHistograms;
     }
 
     public String toString() {

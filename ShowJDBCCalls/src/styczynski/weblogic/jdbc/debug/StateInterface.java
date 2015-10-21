@@ -7,7 +7,7 @@ public interface StateInterface {
 
     /**
      * Informs if current context is valid for processing any transition
-     * Note that this method does not inform about next state
+     * Note that this method does not inform about next state, which is determined in process(...)
      *
      * @param FSMstate             Object keeping state machine's state
      * @param executedObject       Name of intercepted object
@@ -21,13 +21,8 @@ public interface StateInterface {
                                Object[] executedParameter, String callBack);
 
     /**
-     * Process transition logic and return next state.
-     * Note that transition logic belongs to current state.
-     *
-     * Logic to handle entering EXECUTED state must be handled in previous state: PREPARED, CONFIGURED
-     *
-     * [PREPARED---logic--->] [EXECUTED]
-     * [CONFIGURED---logic--->] [EXECUTED]
+     * Executed in post intercetor after physical JDBC call. 
+     * Process transition support logic and returns next state.
      *
      * @param FSMstate Object keeping state machine's state
      * @param executedObject Name of intercepted object

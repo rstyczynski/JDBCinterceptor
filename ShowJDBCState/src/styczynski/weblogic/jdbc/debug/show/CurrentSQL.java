@@ -16,6 +16,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.logging.LogFactory;
+
 import styczynski.weblogic.jdbc.debug.JDBCcallFSMstate;
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
@@ -30,6 +32,13 @@ public class CurrentSQL extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType(CONTENT_TYPE);
+    
+        LogFactory.getLog("TEST").trace("trace");
+        LogFactory.getLog("TEST").debug("DEBUG");
+        LogFactory.getLog("TEST").info("INFO");
+        LogFactory.getLog("TEST").warn("WARN");
+        LogFactory.getLog("TEST").error("ERROR");
+        LogFactory.getLog("TEST").fatal("FATAL");
         
         PrintWriter out = response.getWriter();
         out.println("<html>");
@@ -48,6 +57,7 @@ public class CurrentSQL extends HttpServlet {
         out.println("<th>" + "state" + "</th>");
         out.println("<th>" + "modifiers" + "</th>");
         out.println("<th>" + "updated" + "</th>");
+        out.println("<th>" + "state timing" + "</th>");
         out.println("<th>" + "interceptor" + "</th>");
         out.println("<th>" + "fsmState" + "</th>");
 
@@ -103,6 +113,7 @@ public class CurrentSQL extends HttpServlet {
             out.println("<td>" + fsmState.getCurrentState() + "</td>");
             out.println("<td>" + fsmState.getModifiers() + "</td>");  
             out.println("<td>" + sdf.format(fsmState.getTimeUpdated()) + "</td>");
+            out.println("<td>" + fsmState.getStatesTiming() + "</td>");
             out.println("<td>" + jdbcCall.replace("styczynski.weblogic.jdbc.monitor.", "") + "</td>");
             out.println("<td>" + Integer.toHexString(fsmState.hashCode()) + "</td>");  
             

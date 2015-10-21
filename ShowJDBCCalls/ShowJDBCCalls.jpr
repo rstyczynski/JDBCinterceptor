@@ -104,7 +104,7 @@
    </hash>
    <hash n="oracle.jdeveloper.compiler.OjcConfiguration">
       <value n="internalEncoding" v="UTF8"/>
-      <value n="target" v="1.5"/>
+      <value n="target" v="1.7"/>
       <value n="webIANAEncoding" v="UTF-8"/>
    </hash>
    <hash n="oracle.jdeveloper.deploy.dt.DeploymentProfiles">

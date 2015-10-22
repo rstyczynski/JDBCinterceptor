@@ -53,6 +53,13 @@ public class TopHistogramMap<K, ExecutionHistogram> extends LinkedHashMap<K, Exe
         return readBuffer;
     }
 
+
+    @Override
+    public void clear() {
+        readBuffer.clear();
+        super.clear();
+    }
+
     public static void main(String[] args) {
         System.out.println("Prepare map for 5 items");
         TopHistogramMap fixedSizeMap = new TopHistogramMap(5);

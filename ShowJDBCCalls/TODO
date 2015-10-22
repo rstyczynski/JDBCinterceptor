@@ -5,9 +5,6 @@ TODO
 ========================
 c4) Add state EXCEPTION handling failed statements. Easiest way to check is to execute call dbms_lock.sleep(?) 
 with non integer parameter
-c5) ClearGlobalStatus in debug module executes clear() on jdbcGlobal status object.
--> it have to enumerate threads and cleanup data on per thread level
--> current solution breaks thread to global statu communication, as localthread state object is created and linked during initialisation of jdbc interceptor 
 
 2. Security (4)
 ========================
@@ -79,6 +76,11 @@ m4) Add possibility to filter requests
 i3) logging on log.debug is not printed in WLS log file. 
 
 5. DONE
+========================
+
+c5) ClearGlobalStatus in debug module executes clear() on jdbcGlobal status object.
+    -> it have to enumerate threads and cleanup data on per thread level
+    -> current solution breaks thread to global statu communication, as localthread state object is created and linked during initialisation of jdbc interceptor 
 -> Change method name lookups from list to hashmap. Lookup time will be dramatically lower.
 0.5
 c1) Remove "toLowerCase()" from executedMethod.toLowerCase().startsWith("prepare"). This takes CPU time. 

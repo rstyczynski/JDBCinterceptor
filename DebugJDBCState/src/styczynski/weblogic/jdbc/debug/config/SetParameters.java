@@ -3,12 +3,18 @@ package styczynski.weblogic.jdbc.debug.config;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import styczynski.weblogic.jdbc.debug.JDBCcallFSMstate;
+import styczynski.weblogic.jdbc.debug.report.ExecutionHistogram;
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 import styczynski.weblogic.jdbc.debug.show.HTMLhelper;
 import styczynski.weblogic.jdbc.monitor.CFG;
@@ -82,7 +88,17 @@ public class SetParameters extends HttpServlet {
         
         //TODO Experimental
         if (resetGlobalStatus) {
-            JDBCmonitor.getJdbcGlobalState().clear();;
+            //enumerate by fsm objects
+            final Enumeration<String> threadsEnum = Collections.enumeration(JDBCmonitor.getJdbcGlobalState().keySet());
+            while (threadsEnum.hasMoreElements()) {
+
+                String thread = threadsEnum.nextElement();
+                JDBCcallFSMstate fsmState = JDBCmonitor.getJdbcGlobalState().get(thread);
+                fsmState.initialize();
+                fsmState.getTopHistograms().clear();
+                fsmState.getTopHistograms().getReadBuffer().clear();;
+            }
+            
             out.println("</br>");
             out.println("Global status cleared."  + "</br>");
         }

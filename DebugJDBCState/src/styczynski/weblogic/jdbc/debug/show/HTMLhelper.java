@@ -37,13 +37,13 @@ public class HTMLhelper {
         out.println("<div id=\"topMenu\" class=\"tbframeContent\">");
         out.println("<ul>");
         
-        out.println("<li>");
-        out.println("<a href=\"currentSQL\">Current SQL</a>");
-        out.println("</li>");
-        
-        out.println("<li>");
-        out.println("<a href=\"latestAlerts\">Latest Alerts</a>");
-        out.println("</li>");
+//        out.println("<li>");
+//        out.println("<a href=\"currentSQL\">Current SQL</a>");
+//        out.println("</li>");
+//        
+//        out.println("<li>");
+//        out.println("<a href=\"latestAlerts\">Latest Alerts</a>");
+//        out.println("</li>");
 
         out.println("<li>");
         out.println("<a href=\"setparameters?sqlMaxExecutionTime=1\">Execution threshold: 1ms</a>");
@@ -126,7 +126,12 @@ public class HTMLhelper {
             out.println("<a href=\"executesql?param1=10&noClose\">10s</a>");
             out.println("</li>");
         
-            }
+        }
+        
+        out.println("<li>");
+        out.println("<a href=\"setparameters?resetGlobalStatus=true\">Reset stats</a>");
+        out.println("</li>");
+
 //When state is cleared by thread local, it's not possible to reinitialize. After this step references will be lost.
 //        out.println("<li>");
 //        out.println("<a href=\"setparameters?resetGlobalStatus\">Reset global status</a>");

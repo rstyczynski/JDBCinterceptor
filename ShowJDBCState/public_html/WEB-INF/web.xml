@@ -11,6 +11,10 @@
         <servlet-class>styczynski.weblogic.jdbc.debug.show.LatestAlerts</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>LatestHistograms</servlet-name>
+        <servlet-class>styczynski.weblogic.jdbc.debug.show.LatestHistograms</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>LatestAlertsDebug</servlet-name>
         <servlet-class>styczynski.weblogic.jdbc.debug.show.LatestAlertsDebug</servlet-class>
     </servlet>
@@ -26,6 +30,11 @@
     <servlet-mapping>
         <servlet-name>LatestAlertsDebug</servlet-name>
         <url-pattern>/latestAlertsDebug</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>LatestHistograms</servlet-name>
+        <url-pattern>/latestHistograms</url-pattern>
     </servlet-mapping>
     
     <welcome-file-list>

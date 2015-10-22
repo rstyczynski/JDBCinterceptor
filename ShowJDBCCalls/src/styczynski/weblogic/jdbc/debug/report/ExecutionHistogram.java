@@ -18,11 +18,35 @@ public class ExecutionHistogram {
     private long maxBar = Long.MIN_VALUE;
 
     public ExecutionHistogram(int slots, int slotMax) {
+
+        this.histogram = new long[slots];
+        init();
+        
         this.bucketCnt = slots;
         this.bucketSize = slotMax / slots;
         this.slotMax = slotMax;
-        this.histogram = new long[slots];
+
+    }
+    
+    public ExecutionHistogram(ExecutionHistogram other){
+
+        this.histogram = new long[other.bucketCnt];
         init();
+        
+        this.bucketCnt = other.bucketCnt;
+        this.bucketSize = other.bucketSize;
+        this.slotMax = other.slotMax;
+        this.min = other.min;
+        this.max = other.max;
+        this.avg = other.avg;
+        this.cnt = other.cnt;
+        this.sum = other.sum;
+        this.maxBar = other.maxBar;
+        
+        for(int slot=0; slot<other.bucketCnt; slot++) {
+            this.histogram[slot] = other.histogram[slot];
+        }
+        
     }
 
     public void init() {
@@ -156,9 +180,12 @@ public class ExecutionHistogram {
             throw new RuntimeException("Cannot merge histogram with different bucket size!");
         }
      
-        //merge min, max, avg
-        if (other.min > this.min) this.min = other.min;      
-        if (other.max > this.max) this.max = other.min;  
+        //maxBar, merge min, max, avg
+        if (other.maxBar > this.maxBar) this.maxBar = other.maxBar;  
+        
+        if (other.min < this.min) this.min = other.min;  
+        
+        if (other.max > this.max) this.max = other.max;  
         this.avg = (this.avg + other.avg) / 2;
         
         //merge cnt, sum
@@ -180,6 +207,7 @@ public class ExecutionHistogram {
         histogram.avg = this.avg;
         histogram.cnt = this.cnt;
         histogram.sum = this.sum;
+        histogram.maxBar = this.maxBar;
         
         for(int slot=0; slot<this.bucketCnt; slot++) {
             histogram.histogram[slot] = this.histogram[slot];
@@ -193,7 +221,8 @@ public class ExecutionHistogram {
         if ( !(obj instanceof ExecutionHistogram) ) return false;
         if ( this.bucketSize != ((ExecutionHistogram)obj).bucketSize ) return false;
         if ( this.slotMax != ((ExecutionHistogram)obj).slotMax ) return false;
-
+        if ( this.maxBar != ((ExecutionHistogram)obj).maxBar ) return false;
+        
         if ( this.min != ((ExecutionHistogram)obj).min ) return false;
         if ( this.max != ((ExecutionHistogram)obj).max ) return false;
         if ( this.avg != ((ExecutionHistogram)obj).avg ) return false;

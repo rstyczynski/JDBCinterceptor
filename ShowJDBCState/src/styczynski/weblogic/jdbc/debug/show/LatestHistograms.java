@@ -38,7 +38,7 @@ public class LatestHistograms extends HttpServlet {
         response.setContentType(CONTENT_TYPE);
 
         PrintWriter out = response.getWriter();
-        HTMLhelper.addHeaders(out, "LatestAlerts");
+        HTMLhelper.addHeaders(out, "LatestHistograms");
 
         final Enumeration<String> threadsEnum = Collections.enumeration(JDBCmonitor.getJdbcGlobalState().keySet());
 
@@ -55,11 +55,12 @@ public class LatestHistograms extends HttpServlet {
                 
                 Iterator histIter = fsmState.getTopHistograms().getReadBuffer().keySet().iterator();
                 while (histIter.hasNext()){
-                    Map.Entry entry = (Map.Entry)histIter.next();
-                    if (allHitograms.containsKey(entry.getKey())) {
-                        allHitograms.get(entry.getKey()).merge((ExecutionHistogram)entry.getValue());
+                    String key = (String)histIter.next();
+                    if (allHitograms.containsKey(key)) {
+                        allHitograms.get(key).merge((ExecutionHistogram)fsmState.getTopHistograms().getReadBuffer().get(key));
                     } else {
-                        allHitograms.put(entry.getKey(), (ExecutionHistogram)entry.getValue() );
+                        ExecutionHistogram histogram = new ExecutionHistogram((ExecutionHistogram)fsmState.getTopHistograms().getReadBuffer().get(key));
+                        allHitograms.put(key, histogram);
                     }
                 }    
             }
@@ -69,38 +70,42 @@ public class LatestHistograms extends HttpServlet {
         out.println("</br>");
         out.println("<div class=\"tabletitle\">" + "Latest " + CFG.getTopAlertsToStore() + " alerts" + "</div>");
 
-        out.println("<table class=\"datatable\" id=\"genericTableFormtable\">");
+        out.println("<table style=\"width:1400px\" class=\"datatable\" id=\"genericTableFormtable\">");
         out.println("<tbody>");
         out.println("<tr>");
         out.println("<th>" + "statement" + "</th>");
-        out.println("<th>" + "min" + "</th>");
-        out.println("<th>" + "max" + "</th>");
-        out.println("<th>" + "avg" + "</th>");
         out.println("<th>" + "cnt" + "</th>");
         out.println("<th>" + "sum" + "</th>");
-        out.println("<th>" + "histogram" + "</th>");
+        out.println("<th>" + "min" + "</th>");
+        out.println("<th>" + "avg" + "</th>");
+        out.println("<th>" + "max" + "</th>");
 
+        out.println("<th style=\"width:600px\">" + "chart" + "</th>");
+        
         SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy 'at' hh:mm:ss");
         sdf.setTimeZone(TimeZone.getTimeZone("CET"));
         
         Iterator itr = allHitograms.keySet().iterator();
         int rowNo = 0;
         while (itr.hasNext()) {
-            Map.Entry entry = (Map.Entry)itr.next();    
-            ExecutionHistogram histogram = (ExecutionHistogram) entry.getValue();
+            String key = (String)itr.next();    
+            ExecutionHistogram histogram = allHitograms.get(key);
             rowNo++;
             if (rowNo % 2 != 0) {
                 out.println("<tr class=\"rowEven\">");
             } else {
                 out.println("<tr class=\"rowOdd\">");
             }
-            out.println("<td width=\"600px\">" + entry.getKey() + "</td>");
+            out.println("<td>" + key + "</td>");
+            out.println("<td>" + histogram.getCnt() + "</td>");
+            out.println("<td>" + histogram.getSum() + "</td>");
             out.println("<td>" + histogram.getMin() + "</td>");
             out.println("<td>" + histogram.getAvg() + "</td>");
             out.println("<td>" + histogram.getMax() + "</td>");
-            out.println("<td>" + histogram.getCnt() + "</td>");
-            out.println("<td>" + histogram.getSum() + "</td>");
-            out.println("<td>" + histogram.getASCIIChart() + "</td>");
+
+            out.println("<td width=\"600px\"><FONT size=\"1\" FACE=\"courier\">");
+            out.println(histogram.getASCIIChart(10, 0, "</br>", "X", "x", "-"));
+            out.println("</FONT></td>");
             out.println("</tr>");
         }
         out.println("</tbody>");

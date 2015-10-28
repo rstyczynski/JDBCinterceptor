@@ -61,22 +61,24 @@ public class ExecutionHistogram {
     }
 
     public void add(long measurement) {
-        int bucket = (int) measurement / bucketSize;
-        if (bucket >= bucketCnt)
-            bucket = bucketCnt - 1;
+        
+        int bucketNo = (int) measurement / bucketSize;
+        
+        if (bucketNo >= bucketCnt)
+            bucketNo = bucketCnt - 1;
 
-        this.histogram[bucket]++;
-        if (this.histogram[bucket] > maxBar)
-            maxBar = this.histogram[bucket];
+        this.histogram[bucketNo]++;
+        
+        if (this.histogram[bucketNo] > maxBar)
+            maxBar = this.histogram[bucketNo];
 
-        if (measurement < min)
-            min = measurement;
-        if (measurement > max)
-            max = measurement;
+        if (measurement < min) min = measurement;
+        if (measurement > max) max = measurement;
 
         cnt++;
 
         sum += measurement;
+        
         avg = (long) (sum / cnt);
 
     }
@@ -127,9 +129,8 @@ public class ExecutionHistogram {
         return getASCIIChart(height, 0, "\n", "X", "x", "-");
     }
 
-    public String getASCIIChart(int height, int scalingFactor, String endLine, String mark, String markSmall,
-                                String empty) {
-
+    public String getASCIIChart(int height, int scalingFactor, 
+                                String endLine, String mark, String markSmall, String empty) {
 
         StringBuffer result = new StringBuffer();
         boolean magnify = false;
@@ -144,12 +145,41 @@ public class ExecutionHistogram {
             }
         }
 
-        result.append("maxBar=" + maxBar + endLine);
-        result.append("magnify=" + magnify + endLine);
-        result.append("scalingFactor=" + scalingFactor + endLine);
+        //TODO Debug
+        //result.append("maxBar=" + maxBar + endLine);
+        //result.append("magnify=" + magnify + endLine);
+        //result.append("scalingFactor=" + scalingFactor + endLine);
         long value;
         long barHeight;
+        
+        //TODO it have to be parametrized
+        final int yLabelShift = 5;
+        final int yLabelDensity = 2;
+        final int xLabelDensity = 25;
+        int yLabel = 0;
+        int yLabelLength = 0;
         for (int y = height; y > 0; y--) {
+            
+            if ( y % yLabelDensity == 0) {
+                //print y axis scaling information
+                if(magnify)
+                    yLabel = y / scalingFactor;
+                else
+                    yLabel = y * scalingFactor;
+                
+                //mesuring len is slow - does matter here. it's UI
+                yLabelLength = String.valueOf(yLabel).length();
+                
+                for(int i=0; i< yLabelShift - yLabelLength; i++) result.append(" ");
+                
+                result.append(yLabel);
+                result.append(" ");
+            } else {
+                for(int i=0; i<= yLabelShift; i++)
+                    result.append(" ");
+            }
+            result.append("|");
+                
             for (int i = 0; i < this.bucketCnt; i++) {
                 value = this.histogram[i];
                 barHeight = magnify ? value * scalingFactor : value / scalingFactor;
@@ -168,6 +198,46 @@ public class ExecutionHistogram {
             result.append(endLine);
         }
 
+        
+
+        //add X axis markers
+        for(int i=0; i<= yLabelShift; i++) result.append(" "); //shift to X axis start
+        for (int col = 0; col < this.bucketCnt; col++) {
+            if ( col % xLabelDensity == 0) {
+                result.append("|");
+            } else {
+                result.append("-");
+            }
+        }
+        result.append("|");
+        result.append(endLine);
+        
+        //add X axis labels
+        for(int i=0; i<= yLabelShift; i++) result.append(" "); //shift to X axis start
+        int compensateNextTime = 0;
+        int xLabel = 0;
+        int xLabelLength = 0;
+        int col = 0;
+        for (col = 0; col < this.bucketCnt; col++) {
+            if ( col % xLabelDensity == 0) {
+                
+                xLabel = col * bucketSize;
+                //mesuring len is slow - does matter here. it's UI
+                xLabelLength = String.valueOf(xLabel).length();
+                
+                result.replace(result.length()-(xLabelLength/2) - compensateNextTime, result.length(), String.valueOf(xLabel));
+                compensateNextTime = xLabelLength/2;
+                
+                result.append(" ");
+            } else {
+                result.append(" ");
+            }
+        }
+        //put last label
+        xLabel = col * bucketSize;
+        xLabelLength = String.valueOf(xLabel).length();
+        result.replace(result.length()-(xLabelLength/2) - compensateNextTime, result.length(), String.valueOf(xLabel));
+        
         return result.toString();
     }
 
@@ -180,11 +250,11 @@ public class ExecutionHistogram {
             throw new RuntimeException("Cannot merge histogram with different bucket size!");
         }
      
-        //maxBar, merge min, max, avg
-        if (other.maxBar > this.maxBar) this.maxBar = other.maxBar;  
+        //maxBar - maximum bar seen in histogram. After merge it is sum of both 
+        this.maxBar = this.maxBar + other.maxBar;
         
+        //merge min, max, avg
         if (other.min < this.min) this.min = other.min;  
-        
         if (other.max > this.max) this.max = other.max;  
         this.avg = (this.avg + other.avg) / 2;
         

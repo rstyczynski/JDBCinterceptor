@@ -8,9 +8,9 @@ public class CFG {
     static int histogramSlots = 100;
     static int histogramMax = 10*1000;
     
-    static boolean printHeadersAlways = true;
-    static boolean debugNormal = true;
-    static boolean debugDetailed = true;
+    static boolean printHeadersAlways = false;
+    static boolean debugNormal = false;
+    static boolean debugDetailed = false;
 
     public static int getTopHistogramsToStore() {
         return topHistogramsToStore;

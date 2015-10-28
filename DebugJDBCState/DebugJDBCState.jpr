@@ -263,6 +263,11 @@
             <value n="isJDK" v="false"/>
          </hash>
       </list>
+      <hash n="jdkReference">
+         <url n="id" path="../../../../.jdeveloper/system12.1.3.0.41.140521.1008/o.jdeveloper/1.6.0_65.jdk"/>
+         <value n="isJDK" v="true"/>
+         <value n="jdkVersion" v="1.6.0_65"/>
+      </hash>
       <list n="libraryReferences">
          <hash>
             <value n="id" v="JSP Runtime"/>

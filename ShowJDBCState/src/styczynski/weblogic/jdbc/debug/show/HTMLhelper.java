@@ -27,6 +27,7 @@ public class HTMLhelper {
         out.println("<meta http-equiv=\"expires content=\"Tue, 01 Jan 1980 1:00:00 GMT\" />");
         out.println("<meta http-equiv=\"pragma content=\"no-cache\" />");
                                       
+        out.println("<style type=\"text/css\"> code{white-space:pre} </style>");
         out.println("</head>");
 
         out.println("<body>");

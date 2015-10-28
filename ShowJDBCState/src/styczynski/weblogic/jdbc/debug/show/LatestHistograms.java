@@ -68,22 +68,18 @@ public class LatestHistograms extends HttpServlet {
 
 
         out.println("</br>");
-        out.println("<div class=\"tabletitle\">" + "Latest " + CFG.getTopAlertsToStore() + " alerts" + "</div>");
+        out.println("<div class=\"tabletitle\">" + "Latest " + CFG.getTopHistogramsToStore() + " histograms" + "</div>");
 
-        out.println("<table style=\"width:1400px\" class=\"datatable\" id=\"genericTableFormtable\">");
+        out.println("<table style=\"width:1600px\" class=\"datatable\" id=\"genericTableFormtable\">");
         out.println("<tbody>");
         out.println("<tr>");
         out.println("<th>" + "statement" + "</th>");
         out.println("<th>" + "cnt" + "</th>");
-        out.println("<th>" + "sum" + "</th>");
-        out.println("<th>" + "min" + "</th>");
-        out.println("<th>" + "avg" + "</th>");
-        out.println("<th>" + "max" + "</th>");
-
-        out.println("<th style=\"width:600px\">" + "chart" + "</th>");
-        
-        SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy 'at' hh:mm:ss");
-        sdf.setTimeZone(TimeZone.getTimeZone("CET"));
+        out.println("<th>" + "sum [s]" + "</th>");
+        out.println("<th>" + "min [ms]" + "</th>");
+        out.println("<th>" + "avg [ms]" + "</th>");
+        out.println("<th>" + "max [ms]" + "</th>");
+        out.println("<th style=\"width:600px\">" + "histogram" + "</th>");
         
         Iterator itr = allHitograms.keySet().iterator();
         int rowNo = 0;
@@ -98,14 +94,15 @@ public class LatestHistograms extends HttpServlet {
             }
             out.println("<td>" + key + "</td>");
             out.println("<td>" + histogram.getCnt() + "</td>");
-            out.println("<td>" + histogram.getSum() + "</td>");
+            out.println("<td>" + histogram.getSum()/1000 + "</td>");
             out.println("<td>" + histogram.getMin() + "</td>");
             out.println("<td>" + histogram.getAvg() + "</td>");
             out.println("<td>" + histogram.getMax() + "</td>");
 
-            out.println("<td width=\"600px\"><FONT size=\"1\" FACE=\"courier\">");
-            out.println(histogram.getASCIIChart(10, 0, "</br>", "X", "x", "-"));
-            out.println("</FONT></td>");
+            out.println("<td width=\"600px\"><code><FONT size=\"1\" FACE=\"courier\">");
+            out.println(histogram.getASCIIChart(10, 0, "</br>", "X", "x", "'"));
+            //out.println("</br>" + histogram);
+            out.println("</FONT></code></td>");
             out.println("</tr>");
         }
         out.println("</tbody>");

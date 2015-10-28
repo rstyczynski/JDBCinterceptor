@@ -2,16 +2,15 @@ package styczynski.weblogic.jdbc.monitor;
 
 public class CFG {
     
-    static long sqlMaxExecutionTime = 1000; //SQL execution time threshold
-    static int topAlertsToStore = 50;       //Number of alerts to keep per thread
-    static int topHistogramsToStore = 50;       //Number of histograms to keep per thread
-    static int histogramSlots = 100;    
+    static long sqlMaxExecutionTime = 1000;    //SQL execution time threshold
+    static int topAlertsToStore = 50;          //Number of alerts to keep per thread
+    static int topHistogramsToStore = 5;       //Number of histograms to keep per thread
+    static int histogramSlots = 100;
     static int histogramMax = 10*1000;
     
     static boolean printHeadersAlways = true;
     static boolean debugNormal = true;
     static boolean debugDetailed = true;
-
 
     public static int getTopHistogramsToStore() {
         return topHistogramsToStore;

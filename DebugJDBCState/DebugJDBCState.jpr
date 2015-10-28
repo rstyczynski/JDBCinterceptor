@@ -253,8 +253,8 @@
       </list>
    </hash>
    <hash n="oracle.jdeveloper.model.J2eeSettings">
-      <value n="j2eeWebAppName" v="DebugJDBCState"/>
-      <value n="j2eeWebContextRoot" v="DebugJDBCState"/>
+      <value n="j2eeWebAppName" v="JDBCmonitorCtrl"/>
+      <value n="j2eeWebContextRoot" v="JDBCmonitorCtrl"/>
    </hash>
    <hash n="oracle.jdevimpl.config.JProjectLibraries">
       <list n="exportedReferences">

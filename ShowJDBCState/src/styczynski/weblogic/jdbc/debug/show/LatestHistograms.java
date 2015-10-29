@@ -83,8 +83,39 @@ public class LatestHistograms extends HttpServlet {
         out.println("<th>" + "max [ms]" + "</th>");
         out.println("<th style=\"width:600px\">" + "histogram" + "</th>");
         
+        
         List<ExecutionHistogram> sortedHistograms = new ArrayList<ExecutionHistogram>(allHitograms.values());
         
+        //FILTERING
+        String filter = null;
+        boolean regExp = false;
+        boolean include = true;
+        if (request.getParameter("filter") != null) filter = request.getParameter("filter");
+        if (request.getParameter("regexp") != null) regExp = Boolean.valueOf(request.getParameter("regexp"));   
+        if (request.getParameter("include") != null) include = Boolean.valueOf(request.getParameter("include"));   
+
+        if (filter != null) {
+            List<ExecutionHistogram> removeThem = new ArrayList<ExecutionHistogram>();
+            for(ExecutionHistogram histogram : sortedHistograms)
+                if (include) {
+                    if (regExp) {
+                        if ( ! histogram.getName().matches(filter)) 
+                            removeThem.add(histogram);
+                    } else {
+                        if ( histogram.getName().indexOf(filter) < 0) 
+                            removeThem.add(histogram);
+                    }
+                } else {
+                    if (regExp) {
+                        if ( histogram.getName().matches(filter)) 
+                            removeThem.add(histogram);
+                    } else {
+                        if ( histogram.getName().indexOf(filter) > 0) 
+                            removeThem.add(histogram);
+                    }                    
+                }
+            sortedHistograms.removeAll(removeThem);
+        }
         
         // SORTING START
         {

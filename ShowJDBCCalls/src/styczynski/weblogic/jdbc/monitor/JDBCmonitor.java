@@ -357,7 +357,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
                         histogram.add(lasted);
                     } else {
                         //new statement
-                        ExecutionHistogram histogram = new ExecutionHistogram(CFG.getHistogramSlots(), CFG.getHistogramMax());
+                        ExecutionHistogram histogram = new ExecutionHistogram(CFG.getHistogramSlots(), CFG.getHistogramMax(), statement);
                         histogram.add(lasted);
                         topHistogram.put(statement, histogram);
                     }

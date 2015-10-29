@@ -5,12 +5,14 @@ import java.io.PrintWriter;
 
 import java.text.SimpleDateFormat;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.TimeZone;
@@ -81,18 +83,27 @@ public class LatestHistograms extends HttpServlet {
         out.println("<th>" + "max [ms]" + "</th>");
         out.println("<th style=\"width:600px\">" + "histogram" + "</th>");
         
-        Iterator itr = allHitograms.keySet().iterator();
-        int rowNo = 0;
-        while (itr.hasNext()) {
-            String key = (String)itr.next();    
-            ExecutionHistogram histogram = allHitograms.get(key);
+        List<ExecutionHistogram> sortedHistograms = new ArrayList<ExecutionHistogram>(allHitograms.values());
+        
+        //sort by
+        Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
+            @Override
+            public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
+                Double oneVal = o1.getSum();
+                Double otherVal = o2.getSum();
+                return otherVal.compareTo(oneVal);
+            }
+        });
+
+        int rowNo = 0;        
+        for(ExecutionHistogram histogram : sortedHistograms) {
             rowNo++;
             if (rowNo % 2 != 0) {
                 out.println("<tr class=\"rowEven\">");
             } else {
                 out.println("<tr class=\"rowOdd\">");
             }
-            out.println("<td>" + key + "</td>");
+            out.println("<td>" + histogram.getName() + "</td>");
             out.println("<td>" + histogram.getCnt() + "</td>");
             out.println("<td>" + histogram.getSum()/1000 + "</td>");
             out.println("<td>" + histogram.getMin() + "</td>");
@@ -105,6 +116,31 @@ public class LatestHistograms extends HttpServlet {
             out.println("</FONT></code></td>");
             out.println("</tr>");
         }
+        
+//        Iterator itr = allHitograms.keySet().iterator();
+//        int rowNo = 0;
+//        while (itr.hasNext()) {
+//            String key = (String)itr.next();    
+//            ExecutionHistogram histogram = allHitograms.get(key);
+//            rowNo++;
+//            if (rowNo % 2 != 0) {
+//                out.println("<tr class=\"rowEven\">");
+//            } else {
+//                out.println("<tr class=\"rowOdd\">");
+//            }
+//            out.println("<td>" + key + "</td>");
+//            out.println("<td>" + histogram.getCnt() + "</td>");
+//            out.println("<td>" + histogram.getSum()/1000 + "</td>");
+//            out.println("<td>" + histogram.getMin() + "</td>");
+//            out.println("<td>" + histogram.getAvg() + "</td>");
+//            out.println("<td>" + histogram.getMax() + "</td>");
+//
+//            out.println("<td width=\"600px\"><code><FONT size=\"1\" FACE=\"courier\">");
+//            out.println(histogram.getASCIIChart(10, 0, "</br>", "X", "x", "'"));
+//            //out.println("</br>" + histogram);
+//            out.println("</FONT></code></td>");
+//            out.println("</tr>");
+//        }
         out.println("</tbody>");
         out.println("</table>");
 

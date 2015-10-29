@@ -5,6 +5,9 @@ import java.util.Arrays;
 public class ExecutionHistogram {
 
 
+    private String name = "";
+    private String desc = "";
+    
     private int bucketCnt;
     private int bucketSize;
     private int slotMax;
@@ -17,9 +20,10 @@ public class ExecutionHistogram {
     private long avg = 0;
     private long maxBar = Long.MIN_VALUE;
 
-    public ExecutionHistogram(int slots, int slotMax) {
+    public ExecutionHistogram(int slots, int slotMax, String name) {
 
         this.histogram = new long[slots];
+        this.name = name;
         init();
         
         this.bucketCnt = slots;
@@ -31,6 +35,7 @@ public class ExecutionHistogram {
     public ExecutionHistogram(ExecutionHistogram other){
 
         this.histogram = new long[other.bucketCnt];
+        this.name = other.name;
         init();
         
         this.bucketCnt = other.bucketCnt;
@@ -121,6 +126,22 @@ public class ExecutionHistogram {
     }
 
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
     public String getASCIIChart() {
         return getASCIIChart(10, 0, "\n", "X", "x", "-");
     }
@@ -196,9 +217,7 @@ public class ExecutionHistogram {
                 }
             }
             result.append(endLine);
-        }
-
-        
+        }        
 
         //add X axis markers
         for(int i=0; i<= yLabelShift; i++) result.append(" "); //shift to X axis start
@@ -271,7 +290,7 @@ public class ExecutionHistogram {
 
     @Override
     protected Object clone() throws CloneNotSupportedException {
-        ExecutionHistogram histogram = new ExecutionHistogram(this.bucketCnt, this.slotMax);
+        ExecutionHistogram histogram = new ExecutionHistogram(this.bucketCnt, this.slotMax, this.name);
         histogram.min = this.min;
         histogram.max = this.max;
         histogram.avg = this.avg;
@@ -325,7 +344,7 @@ public class ExecutionHistogram {
 
 
     public static void main(String[] args) {
-        ExecutionHistogram histogram = new ExecutionHistogram(20, 1000);
+        ExecutionHistogram histogram = new ExecutionHistogram(20, 1000, "of 20");
         histogram.add(101);
         histogram.add(10);
         histogram.add(501);
@@ -384,7 +403,7 @@ public class ExecutionHistogram {
         System.out.println(Arrays.toString(histogram.getHistogram()));
 
 
-        ExecutionHistogram histogram2 = new ExecutionHistogram(20, 1000);
+        ExecutionHistogram histogram2 = new ExecutionHistogram(20, 1000, "of 20");
         histogram2.add(10);
         histogram2.add(10);
         histogram2.add(10);

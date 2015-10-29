@@ -85,15 +85,108 @@ public class LatestHistograms extends HttpServlet {
         
         List<ExecutionHistogram> sortedHistograms = new ArrayList<ExecutionHistogram>(allHitograms.values());
         
-        //sort by
-        Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
-            @Override
-            public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
-                Double oneVal = o1.getSum();
-                Double otherVal = o2.getSum();
-                return otherVal.compareTo(oneVal);
-            }
-        });
+        
+        // SORTING START
+        {
+        String sortBy = "(none)";
+        boolean sortAsc = false;
+        if (request.getParameter("sortBy") != null) sortBy=request.getParameter("sortBy");
+        if (request.getParameter("sortAsc") != null) sortAsc= Boolean.valueOf(request.getParameter("sortAsc"));      
+        
+        if ( "cnt".equals(sortBy) )
+            if (sortAsc)
+                Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
+                    public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
+                        Long oneVal = o1.getCnt();
+                        Long otherVal = o2.getCnt();
+                        return oneVal.compareTo(otherVal);
+                    }
+                });
+            else
+                Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
+                    public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
+                        Long oneVal = o1.getCnt();
+                        Long otherVal = o2.getCnt();
+                        return otherVal.compareTo(oneVal);
+                    }
+                });
+        
+        if ( "sum".equals(sortBy) )
+            if (sortAsc)
+                Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
+                    @Override
+                    public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
+                        Double oneVal = o1.getSum();
+                        Double otherVal = o2.getSum();
+                        return oneVal.compareTo(otherVal);
+                    }
+                });
+            else
+            Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
+                @Override
+                public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
+                    Double oneVal = o1.getSum();
+                    Double otherVal = o2.getSum();
+                    return otherVal.compareTo(oneVal);
+                }
+            });          
+        
+            if ( "min".equals(sortBy) )
+                if (sortAsc)
+                    Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
+                        public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
+                            Long oneVal = o1.getMin();
+                            Long otherVal = o2.getMin();
+                            return oneVal.compareTo(otherVal);
+                        }
+                    });
+                else
+                    Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
+                        public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
+                            Long oneVal = o1.getMin();
+                            Long otherVal = o2.getMin();
+                            return otherVal.compareTo(oneVal);
+                        }
+                    });
+ 
+            if ( "avg".equals(sortBy) )
+                if (sortAsc)
+                    Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
+                        public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
+                            Long oneVal = o1.getAvg();
+                            Long otherVal = o2.getAvg();
+                            return oneVal.compareTo(otherVal);
+                        }
+                    });
+                else
+                    Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
+                        public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
+                            Long oneVal = o1.getAvg();
+                            Long otherVal = o2.getAvg();
+                            return otherVal.compareTo(oneVal);
+                        }
+                    });
+     
+            if ( "max".equals(sortBy) )
+                if (sortAsc)
+                    Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
+                        public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
+                            Long oneVal = o1.getMax();
+                            Long otherVal = o2.getMax();
+                            return oneVal.compareTo(otherVal);
+                        }
+                    });
+                else
+                    Collections.sort(sortedHistograms, new Comparator<ExecutionHistogram>() {
+                        public int compare(ExecutionHistogram o1, ExecutionHistogram o2) {
+                            Long oneVal = o1.getMax();
+                            Long otherVal = o2.getMax();
+                            return otherVal.compareTo(oneVal);
+                        }
+                    });
+            
+        } //SORTING STOP
+
 
         int rowNo = 0;        
         for(ExecutionHistogram histogram : sortedHistograms) {

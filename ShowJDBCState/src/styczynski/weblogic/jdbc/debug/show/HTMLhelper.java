@@ -3,18 +3,22 @@ package styczynski.weblogic.jdbc.debug.show;
 import java.io.PrintWriter;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.prefs.Preferences;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class HTMLhelper {
 
 
-    public static void addHeaders(PrintWriter out, String title) {
+    public static void addHeaders(PrintWriter out, String title, HttpServletRequest request) {
         HashMap props = new HashMap();
         props.put("testInNewPage",true);
-        addHeaders(out, title, props);
+        addHeaders(out, title, props, request);
         
     }
     
-    public static void addHeaders(PrintWriter out, String title, HashMap props) {
+    public static void addHeaders(PrintWriter out, String title, HashMap props, HttpServletRequest request) {
         out.println("<html>");
         out.println("<head>");
         out.println("<title>" + title + "</title>");
@@ -32,6 +36,12 @@ public class HTMLhelper {
 
         out.println("<body>");
 
+        if (props.containsKey("histogram")) {
+            out.println("<table style=\"width:1400px; border: 0px; border-collapse: collapse;\">");
+            out.println("<tr>");
+            out.println("<td style=\"width:300px;\">");
+        }
+        
         out.println("<div class=\"toolbar\">");
         //            out.println("<div class=\"toolbar-menu\">");
         out.println("<div class=\"tbframe\">");
@@ -49,17 +59,59 @@ public class HTMLhelper {
         out.println("<li>");
         out.println("<a href=\"latestHistograms\">Latest Histograms</a>");
         out.println("</li>");
-    
-//When state is cleared by thread local, it's not possible to reinitialize. After this step references will be lost.
-//        out.println("<li>");
-//        out.println("<a href=\"setparameters?resetGlobalStatus\">Reset global status</a>");
-//        out.println("</li>");
-//        
         out.println("</ul>");
         out.println("</div>");
         out.println("</div>");
-        //            out.println("</div>");
         out.println("</div>");
+        
+        
+        if (props.containsKey("histogram")) {
+            out.println("</td>");
+    
+            out.println("<td>");
+            out.println("<div class=\"toolbar\">");
+            
+            boolean first=true;
+            boolean nextSortAsc = false;
+            StringBuffer myURL = request.getRequestURL();
+            for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+                String name = entry.getKey();
+                String[] value = entry.getValue();
+                            
+                if (! name.equals("filter") ) {
+                    if (first) {
+                        myURL.append("?");
+                        first=false;
+                    } else {
+                        myURL.append("&");
+                    }
+                    myURL.append(name + "=" + value[0]);
+                }
+            }
+            
+            String href = myURL.toString();
+            
+            out.println("<form method=GET action=" + href + " style=\"text-align: left; margin-bottom:5px 0; height:10px\">");
+    
+            out.println("<label style=\"font-size:11px;\" >");  
+            out.println("Filter SQL");  
+            out.println("</label>"); 
+            
+            
+            String filter = "";
+            if (request.getParameter("filter") != null) filter = request.getParameter("filter");
+            out.println("<input type=\"text\" name=\"filter\" value=\"" + filter + "\">");
+            
+            out.println("<button style=\"background: transparent url(images/search_ena.gif); padding-right: 0px; width: 20px; height: 20px;\"  type=\"button\" class=\"formButton\" onclick=\"this.form.submit();return false;\" name=\"search\" title=\"Search\">");
+            out.println("</form>");        
+            
+            out.println("</div>");
+            out.println("</td>");
+                           
+            out.println("</tr>");
+            out.println("</table>");
+        }
+
     }
     
 }

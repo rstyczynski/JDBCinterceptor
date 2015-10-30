@@ -3,6 +3,11 @@ package styczynski.weblogic.jdbc.debug.show;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import java.net.URI;
+
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
@@ -23,6 +28,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import javax.servlet.http.HttpServletRequestWrapper;
+
 import styczynski.weblogic.jdbc.debug.JDBCcallFSMstate;
 import styczynski.weblogic.jdbc.debug.report.ExecutionAlert;
 import styczynski.weblogic.jdbc.debug.report.ExecutionHistogram;
@@ -40,7 +47,9 @@ public class LatestHistograms extends HttpServlet {
         response.setContentType(CONTENT_TYPE);
 
         PrintWriter out = response.getWriter();
-        HTMLhelper.addHeaders(out, "LatestHistograms");
+        HashMap props = new HashMap();
+        props.put("histogram", true);
+        HTMLhelper.addHeaders(out, "LatestHistograms", props, request);
 
         final Enumeration<String> threadsEnum = Collections.enumeration(JDBCmonitor.getJdbcGlobalState().keySet());
 
@@ -67,21 +76,74 @@ public class LatestHistograms extends HttpServlet {
                 }    
             }
         }
-
-
-        out.println("</br>");
-        out.println("<div class=\"tabletitle\">" + "Latest " + CFG.getTopHistogramsToStore() + " histograms" + "</div>");
-
-        out.println("<table style=\"width:1600px\" class=\"datatable\" id=\"genericTableFormtable\">");
+        
+//        //// DEBUG
+//        out.print(request.getRequestURI() + "</br>");  //-> /JDBCmonitor/latestHistograms
+//        out.print(request.getRequestURL() + "</br>");  //-> http://10.37.129.3:7001/JDBCmonitor/latestHistograms
+//        out.print(request.getQueryString() + "</br>"); //-> sortBy=cnt&sortAsc=true
+//        for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+//            String name = entry.getKey();
+//            String[] value = entry.getValue();
+//            out.print(name + ":" + value[0] + "</br>");
+//        }
+//        //-> sortAsc:true
+//        //-> sortBy:cnt
+        
+        boolean first=true;
+        boolean nextSortAsc = false;
+        StringBuffer myURL = request.getRequestURL();
+        for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+            String name = entry.getKey();
+            String[] value = entry.getValue();
+                        
+            if (name.equals("sortAsc")) {
+                if(value[0] != null && value[0].equals("true")) {
+                    nextSortAsc = false;
+                } else {
+                    nextSortAsc = true;
+                }
+                if (first) {
+                    myURL.append("?");
+                    first=false;
+                } else {
+                    myURL.append("&");
+                }
+                myURL.append("sortAsc=" + nextSortAsc);
+            } else {
+                if (! name.equals("sortBy") ) {
+                    if (first) {
+                        myURL.append("?");
+                        first=false;
+                    } else {
+                        myURL.append("&");
+                    }
+                    myURL.append(name + "=" + value[0]);
+                }
+            }
+        }
+        
+        out.println("<div class=\"tabletitle\">" + "Latest histograms" + "</div>");
+        out.println("<table style=\"width:1400px\" class=\"datatable\" id=\"genericTableFormtable\">");
         out.println("<tbody>");
         out.println("<tr>");
         out.println("<th>" + "statement" + "</th>");
-        out.println("<th>" + "cnt" + "</th>");
-        out.println("<th>" + "sum [s]" + "</th>");
-        out.println("<th>" + "min [ms]" + "</th>");
-        out.println("<th>" + "avg [ms]" + "</th>");
-        out.println("<th>" + "max [ms]" + "</th>");
-        out.println("<th style=\"width:600px\">" + "histogram" + "</th>");
+        
+        String href = first ? myURL.toString() + "?sortBy=cnt&sortAsc=false" : myURL.toString() + "&sortBy=cnt&sortAsc=" + nextSortAsc;
+        out.println("<th>" + "<a href=" + href + ">cnt</a>" + "</th>");
+        
+        href = first ? myURL.toString() + "?sortBy=sum&sortAsc=false" : myURL.toString() + "&sortBy=sum&sortAsc=\" + nextSortAsc";
+        out.println("<th>" + "<a href=" + href + ">sum [s]</a>" + "</th>");
+        
+        href = first ? myURL.toString() + "?sortBy=min&sortAsc=false" : myURL.toString() + "&sortBy=min&sortAsc=\" + nextSortAsc";
+        out.println("<th>" + "<a href=" + href + ">min [ms]</a>" + "</th>");
+        
+        href = first ? myURL.toString() + "?sortBy=avg&sortAsc=false" : myURL.toString() + "&sortBy=avg&sortAsc=\" + nextSortAsc";
+        out.println("<th>" + "<a href=" + href + ">avg [ms]</a>" + "</th>");
+
+        href = first ? myURL.toString() + "?sortBy=max&sortAsc=false" : myURL.toString() + "&sortBy=max&sortAsc=\" + nextSortAsc";
+        out.println("<th>" + "<a href=" + href + ">max [ms]</a>" + "</th>");
+        
+        out.println("<th style=\"width:400px\">" + "histogram" + "</th>");
         
         
         List<ExecutionHistogram> sortedHistograms = new ArrayList<ExecutionHistogram>(allHitograms.values());
@@ -234,37 +296,13 @@ public class LatestHistograms extends HttpServlet {
             out.println("<td>" + histogram.getAvg() + "</td>");
             out.println("<td>" + histogram.getMax() + "</td>");
 
-            out.println("<td width=\"600px\"><code><FONT size=\"1\" FACE=\"courier\">");
+            out.println("<td width=\"400px\"><code><FONT size=\"1\" FACE=\"courier\">");
             out.println(histogram.getASCIIChart(10, 0, "</br>", "X", "x", "'"));
             //out.println("</br>" + histogram);
             out.println("</FONT></code></td>");
             out.println("</tr>");
         }
         
-//        Iterator itr = allHitograms.keySet().iterator();
-//        int rowNo = 0;
-//        while (itr.hasNext()) {
-//            String key = (String)itr.next();    
-//            ExecutionHistogram histogram = allHitograms.get(key);
-//            rowNo++;
-//            if (rowNo % 2 != 0) {
-//                out.println("<tr class=\"rowEven\">");
-//            } else {
-//                out.println("<tr class=\"rowOdd\">");
-//            }
-//            out.println("<td>" + key + "</td>");
-//            out.println("<td>" + histogram.getCnt() + "</td>");
-//            out.println("<td>" + histogram.getSum()/1000 + "</td>");
-//            out.println("<td>" + histogram.getMin() + "</td>");
-//            out.println("<td>" + histogram.getAvg() + "</td>");
-//            out.println("<td>" + histogram.getMax() + "</td>");
-//
-//            out.println("<td width=\"600px\"><code><FONT size=\"1\" FACE=\"courier\">");
-//            out.println(histogram.getASCIIChart(10, 0, "</br>", "X", "x", "'"));
-//            //out.println("</br>" + histogram);
-//            out.println("</FONT></code></td>");
-//            out.println("</tr>");
-//        }
         out.println("</tbody>");
         out.println("</table>");
 

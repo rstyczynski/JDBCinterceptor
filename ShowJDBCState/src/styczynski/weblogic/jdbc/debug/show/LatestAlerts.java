@@ -34,7 +34,7 @@ public class LatestAlerts extends HttpServlet {
         response.setContentType(CONTENT_TYPE);
 
         PrintWriter out = response.getWriter();
-        HTMLhelper.addHeaders(out, "LatestAlerts");
+        HTMLhelper.addHeaders(out, "LatestAlerts", request);
 
         final Enumeration<String> threadsEnum = Collections.enumeration(JDBCmonitor.getJdbcGlobalState().keySet());
 

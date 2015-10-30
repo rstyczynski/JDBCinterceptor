@@ -43,7 +43,7 @@ public class CurrentSQL extends HttpServlet {
         PrintWriter out = response.getWriter();
         out.println("<html>");
 
-        HTMLhelper.addHeaders(out, "Current SQL");
+        HTMLhelper.addHeaders(out, "Current SQL", request);
                 
         out.println("<body>");
 

@@ -90,6 +90,7 @@ public class LatestHistograms extends HttpServlet {
 //        //-> sortBy:cnt
         
         boolean first=true;
+        boolean sortExists = false;
         boolean nextSortAsc = false;
         StringBuffer myURL = request.getRequestURL();
         for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
@@ -102,6 +103,9 @@ public class LatestHistograms extends HttpServlet {
                 } else {
                     nextSortAsc = true;
                 }
+//                if (first) {
+//                    first=false;
+//                }
                 if (first) {
                     myURL.append("?");
                     first=false;
@@ -109,6 +113,7 @@ public class LatestHistograms extends HttpServlet {
                     myURL.append("&");
                 }
                 myURL.append("sortAsc=" + nextSortAsc);
+                sortExists=true;
             } else {
                 if (! name.equals("sortBy") ) {
                     if (first) {
@@ -128,19 +133,24 @@ public class LatestHistograms extends HttpServlet {
         out.println("<tr>");
         out.println("<th>" + "statement" + "</th>");
         
-        String href = first ? myURL.toString() + "?sortBy=cnt&sortAsc=false" : myURL.toString() + "&sortBy=cnt&sortAsc=" + nextSortAsc;
+        String href = first ? myURL.toString() + "?sortBy=cnt&sortAsc=false" : myURL.toString() + 
+                      (sortExists ? "&sortBy=cnt" : "&sortBy=cnt&sortAsc=" + nextSortAsc);
         out.println("<th>" + "<a href=" + href + ">cnt</a>" + "</th>");
         
-        href = first ? myURL.toString() + "?sortBy=sum&sortAsc=false" : myURL.toString() + "&sortBy=sum&sortAsc=\" + nextSortAsc";
+        href = first ? myURL.toString() + "?sortBy=sum&sortAsc=false" : myURL.toString() + 
+                      (sortExists ? "&sortBy=sum" : "&sortBy=sum&sortAsc=" + nextSortAsc);        
         out.println("<th>" + "<a href=" + href + ">sum [s]</a>" + "</th>");
         
-        href = first ? myURL.toString() + "?sortBy=min&sortAsc=false" : myURL.toString() + "&sortBy=min&sortAsc=\" + nextSortAsc";
+        href = first ? myURL.toString() + "?sortBy=min&sortAsc=false" : myURL.toString() +
+                      (sortExists ? "&sortBy=min" : "&sortBy=min&sortAsc=" + nextSortAsc);
         out.println("<th>" + "<a href=" + href + ">min [ms]</a>" + "</th>");
         
-        href = first ? myURL.toString() + "?sortBy=avg&sortAsc=false" : myURL.toString() + "&sortBy=avg&sortAsc=\" + nextSortAsc";
+        href = first ? myURL.toString() + "?sortBy=avg&sortAsc=false" : myURL.toString() + 
+                      (sortExists ? "&sortBy=avg" : "&sortBy=avg&sortAsc=" + nextSortAsc);
         out.println("<th>" + "<a href=" + href + ">avg [ms]</a>" + "</th>");
 
-        href = first ? myURL.toString() + "?sortBy=max&sortAsc=false" : myURL.toString() + "&sortBy=max&sortAsc=\" + nextSortAsc";
+        href = first ? myURL.toString() + "?sortBy=max&sortAsc=false" : myURL.toString() +
+                      (sortExists ? "&sortBy=max" : "&sortBy=max&sortAsc=" + nextSortAsc);
         out.println("<th>" + "<a href=" + href + ">max [ms]</a>" + "</th>");
         
         out.println("<th style=\"width:400px\">" + "histogram" + "</th>");

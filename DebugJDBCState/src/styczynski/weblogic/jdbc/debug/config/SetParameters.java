@@ -28,7 +28,7 @@ public class SetParameters extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // SQL execution threadshold
-        long sqlMaxExecutionTime = JDBCmonitor.getSqlMaxExecutionTime();
+        int sqlMaxExecutionTime = JDBCmonitor.getSqlMaxExecutionTime();
         // number of alerts to be kept in memory
         int topAlertsToStore = CFG.getTopAlertsToStore();
         boolean printHeadersAlways = CFG.isPrintHeadersAlways();

@@ -151,7 +151,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
     private ThreadLocal <JDBCcallFSMstate>fsmStateThreadLocal = 
         new ThreadLocal <JDBCcallFSMstate>() {
             protected JDBCcallFSMstate initialValue() {
-                if (CFG.debugNormal)
+                if (CFG.isDebugNormal())
                     printMethodHeader("initializeState");
                 
                 JDBCcallFSMstate result = new JDBCcallFSMstate();
@@ -162,7 +162,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
                 String thisInstance = JDBCmonitor.this.toString() + "@" + Thread.currentThread().getName();
                 JDBCmonitor.jdbcGlobalState.put(thisInstance, result);
                     
-                if (CFG.debugNormal)
+                if (CFG.isDebugNormal())
                     printMethodHeader("initializeState completed");
                 
                 return result;
@@ -217,12 +217,12 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             currentState = getFsmState().getCurrentState();
             
             boolean headerPrinted = false;
-            if ((CFG.debugNormal || CFG.debugDetailed) && CFG.printHeadersAlways) {
+            if ((CFG.isDebugNormal() || CFG.isDebugDetailed()) && CFG.isPrintHeadersAlways()) {
                 printMethodHeader("pre:" + currentState);
                 headerPrinted = true;
             }
             
-            if ((CFG.debugNormal || CFG.debugDetailed) && CFG.printHeadersAlways) {
+            if ((CFG.isDebugNormal() || CFG.isDebugDetailed()) && CFG.isPrintHeadersAlways()) {
                 printMethodHeader(currentState, executedObject, executedMethod, executedParameter);
                 headerPrinted = true;
             }
@@ -239,13 +239,13 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             
             if (processCommand) {
                 if (!headerPrinted) {
-                    if (CFG.debugNormal) {
+                    if (CFG.isDebugNormal()) {
                         printMethodHeader(interceptorStage);
                         printMethodHeader(currentState, executedObject, executedMethod, executedParameter);
                         headerPrinted = true;
                     }
                 }
-                if ((CFG.debugNormal || CFG.debugDetailed) && CFG.printHeadersAlways)
+                if ((CFG.isDebugNormal() || CFG.isDebugDetailed()) && CFG.isPrintHeadersAlways())
                 log.debug("Info: " + "Current interception has execution handler for state : " +
                           currentState + ". Will proceed.");
 
@@ -295,12 +295,12 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             currentState = getFsmState().getCurrentState();
             
             boolean headerPrinted = false;
-            if ((CFG.debugNormal || CFG.debugDetailed) && CFG.printHeadersAlways) {
+            if ((CFG.isDebugNormal() || CFG.isDebugDetailed()) && CFG.isPrintHeadersAlways()) {
                 printMethodHeader("post:" + currentState);
                 headerPrinted = true;
             }
 
-            if ((CFG.debugNormal || CFG.debugDetailed) && CFG.printHeadersAlways) {
+            if ((CFG.isDebugNormal() || CFG.isDebugDetailed()) && CFG.isPrintHeadersAlways()) {
                 printMethodHeader(currentState, executedObject, executedMethod, executedParameter, returnedObject);
                 headerPrinted = true;
             }
@@ -318,7 +318,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
                 
                 JDBCcallFSM nextState = currentState.process(getFsmState(), executedObject, executedMethod, executedParameter, interceptorStage);
                 
-                if (CFG.debugDetailed)
+                if (CFG.isDebugDetailed())
                     log.debug("State processing completed. Next state:" + nextState);
 
 
@@ -340,7 +340,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
 //                        log.debug("Notification raised:" + notification);
 
                     Long lasted = getFsmState().getLasted();
-                    if (CFG.debugDetailed)
+                    if (CFG.isDebugDetailed())
                         log.debug("Lasted=" + lasted);
 
                     if (lasted == null) {
@@ -362,8 +362,8 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
                         topHistogram.put(statement, histogram);
                     }
 
-                    if (lasted >= CFG.sqlMaxExecutionTime) {
-                        if (CFG.debugDetailed)
+                    if (lasted >= CFG.getSqlMaxExecutionTime()) {
+                        if (CFG.isDebugDetailed())
                             log.debug("Time bigger than defined:" + lasted);
 
                         //it's a good way to pass data. no need to copy data
@@ -398,7 +398,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
                 getFsmState().setCurrentState(nextState);
                 //if next state is FINAL -> initialize state
                 if (nextState.equals(JDBCcallFSM.FINAL)) {
-                    if (CFG.debugNormal)
+                    if (CFG.isDebugNormal())
                         log.debug("FINAL state detected. Resetting state.");
                     getFsmState().initialize();   
                 }
@@ -462,11 +462,11 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
     // getters / seters
 
     public static void setSqlMaxExecutionTime(int sqlMaxExecutionTime) {
-        CFG.sqlMaxExecutionTime = sqlMaxExecutionTime;
+        CFG.setSqlMaxExecutionTime(sqlMaxExecutionTime);
     }
 
-    public static long getSqlMaxExecutionTime() {
-        return CFG.sqlMaxExecutionTime;
+    public static int getSqlMaxExecutionTime() {
+        return CFG.getSqlMaxExecutionTime();
     }
 
 
@@ -489,7 +489,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
     }
 
     public void updateState(StateInterface state, boolean processed) {
-        if (CFG.debugDetailed)
+        if (CFG.isDebugDetailed())
             log.debug("updateState: Setting " + state + " to " + processed);
         getFsmState().getProcessedStates().put(state, processed);
     }
@@ -503,13 +503,13 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
             if (states.containsKey(state)) {
                 result = (Boolean) states.get(state);
             } else {
-                if (CFG.debugDetailed)
+                if (CFG.isDebugDetailed())
                     log.debug("isProcessed: State " + state + " not on a status map! Adding...");
                 states.put(state, false);
                 result = false;
             }
         } else {
-            if (CFG.debugDetailed)
+            if (CFG.isDebugDetailed())
                 log.debug("isProcessed: State " + state + " is null!");
             result = false;
         }

@@ -11,35 +11,40 @@ import org.apache.commons.logging.LogFactory;
 
 public class CFG {
     
-    static private Log log = LogFactory.getLog("styczynski.weblogic.jdbc.monitor.CFG");
+    private static Log log = LogFactory.getLog("styczynski.weblogic.jdbc.monitor.CFG");
     
-    static Properties props = new Properties(); //used to load/store configuration
-    static final String propsFile="config/jdbcMonitor.properties"; //expect file file in domain config directory. Unchangeabnle
+    private static Properties props = new Properties(); //used to load/store configuration
+    private static final String propsFile="config/jdbcMonitor.properties"; //expect file file in domain config directory. Unchangeabnle
     
     //technical properties
-    static boolean cfgReadOnly = false; //by default config file is writeable. May be disabled by setting true value in cfg file itself
+    private static boolean cfgReadOnly = false; //by default config file is writeable. May be disabled by setting true value in cfg file itself
 
     //logic related properties    
-    static int topAlertsToStore = 50;          //Number of alerts to keep per thread
-    static int topHistogramsToStore = 50;      //Number of histograms to keep per thread
-    static int sqlMaxExecutionTime = 1000;    //SQL execution time threshold in ms
+    private static int topAlertsToStore = 50;          //Number of alerts to keep per thread
+    private static int topHistogramsToStore = 50;      //Number of histograms to keep per thread
+    private static int sqlMaxExecutionTime = 1000;    //SQL execution time threshold in ms
                                                //   -> 1s
-    static int histogramMax = 10*1000;         //Maximum value of the histogram 
+    private static int histogramMax = 10*1000;         //Maximum value of the histogram 
                                                //   -> 10s.
-    static int histogramSlots = 100;           //Number of histogram buckets. 
+    private static int histogramSlots = 100;           //Number of histogram buckets. 
                                                //   -> X axis width and resolution. 
                                                //   -> now each bucket shows 100ms time slot
 
-    static boolean printHeadersAlways = false; // how debug is printed
-    static boolean debugNormal = false;        // low traffic debug
-    static boolean debugDetailed = false;      // detaild debug
+    private static boolean printHeadersAlways = false; // how debug is printed
+    private static boolean debugNormal = false;        // low traffic debug
+    private static boolean debugDetailed = false;      // detaild debug
 
+
+    static {
+        init();
+    }
 
     public static void setCfgReadOnly(boolean cfgReadOnly) {
         CFG.cfgReadOnly = cfgReadOnly;
         props.setProperty("cfgReadOnly", String.valueOf(cfgReadOnly));
         store();
     }
+    
 
     public boolean isCfgReadOnly() {
         return cfgReadOnly;
@@ -143,7 +148,7 @@ public class CFG {
         return result;
     }
     
-    void init(){
+    static void init(){
         
         FileInputStream in = null;
         try {

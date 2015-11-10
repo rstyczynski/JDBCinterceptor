@@ -461,7 +461,7 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
 
     // getters / seters
 
-    public static void setSqlMaxExecutionTime(long sqlMaxExecutionTime) {
+    public static void setSqlMaxExecutionTime(int sqlMaxExecutionTime) {
         CFG.sqlMaxExecutionTime = sqlMaxExecutionTime;
     }
 

@@ -75,14 +75,73 @@
       <value n="internalEncoding" v="UTF8"/>
       <value n="webIANAEncoding" v="UTF-8"/>
    </hash>
+   <hash n="oracle.jdeveloper.deploy.dt.DeploymentProfiles">
+      <hash n="profileDefinitions">
+         <hash n="appcl1">
+            <hash n="archiveOptions">
+               <value n="hasManifest" v="true"/>
+               <value n="mainClass" v="workbench.PropertiesLoadSave"/>
+            </hash>
+            <hash n="fileGroups">
+               <list n="groups">
+                  <hash>
+                     <list n="contributors">
+                        <hash>
+                           <value n="type" v="2"/>
+                        </hash>
+                        <hash>
+                           <value n="type" v="7"/>
+                        </hash>
+                     </list>
+                     <value n="displayName" v="Project Output"/>
+                     <hash n="filters">
+                        <list n="rules">
+                           <hash>
+                              <value n="pattern" v="**"/>
+                              <value n="type" v="0"/>
+                           </hash>
+                        </list>
+                     </hash>
+                     <value n="internalName" v="project-output"/>
+                     <value n="type" v="1"/>
+                  </hash>
+               </list>
+            </hash>
+            <url n="jarURL" path="deploy/appcl1.jar"/>
+            <value n="profileClass" v="oracle.jdeveloper.deploy.jar.ClientProfile"/>
+            <value n="profileName" v="appcl1"/>
+         </hash>
+      </hash>
+      <list n="profileList">
+         <string v="appcl1"/>
+      </list>
+   </hash>
    <hash n="oracle.jdeveloper.model.J2eeSettings">
       <value n="j2eeWebAppName" v="JDBCInterceptor-Workbench-webapp"/>
       <value n="j2eeWebContextRoot" v="JDBCInterceptor-Workbench-context-root"/>
+   </hash>
+   <hash n="oracle.jdeveloper.runner.RunConfigurations">
+      <hash n="runConfigurationDefinitions">
+         <hash n="Run">
+            <value n="custom" v="false"/>
+            <value n="javaOptions" v=""/>
+            <value n="name" v="Run"/>
+            <value n="targetURL"/>
+         </hash>
+      </hash>
+      <list n="runConfigurationList">
+         <string v="Default"/>
+         <string v="Run"/>
+      </list>
    </hash>
    <hash n="oracle.jdevimpl.config.JProjectLibraries">
       <list n="exportedReferences">
          <hash>
             <value n="id" v="Groovy243"/>
+            <value n="isJDK" v="false"/>
+         </hash>
+         <hash>
+            <value n="id" v="Appcl1.jar"/>
             <value n="isJDK" v="false"/>
          </hash>
       </list>
@@ -135,11 +194,24 @@
                <value n="description" v="Groovy243"/>
                <value n="id" v="Groovy243"/>
             </hash>
+            <hash>
+               <list n="classPath">
+                  <url path="deploy/appcl1.jar" jar-entry=""/>
+               </list>
+               <value n="deployedByDefault" v="true"/>
+               <value n="description" v="Appcl1.jar"/>
+               <value n="id" v="Appcl1.jar"/>
+               <value n="locked" v="true"/>
+            </hash>
          </list>
       </hash>
       <list n="libraryReferences">
          <hash>
             <value n="id" v="Groovy243"/>
+            <value n="isJDK" v="false"/>
+         </hash>
+         <hash>
+            <value n="id" v="Appcl1.jar"/>
             <value n="isJDK" v="false"/>
          </hash>
       </list>

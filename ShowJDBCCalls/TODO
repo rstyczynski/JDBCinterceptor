@@ -20,9 +20,12 @@ s3) Add data masking for sensitive fields e.g. passwords
     (b) for parameters of prepared statement
 
 
-3. Manageability (6)
+3. Manageability (7)
 ========================
-m6) Add execution tiem histogram of sql recognized by it's test.
+m7) Add property disabling interceptor
+        useful for performnce reasons to be able to quickly disable the code
+        
+m6) Add execution time histogram of sql recognized by it's test.
     -> add histogram next to place where alert is raised
     OK -> add array of histogram objects to JDBCcallFSMstate
         OK -> aray must be limited to latest N sql texts
@@ -31,11 +34,19 @@ m6) Add execution tiem histogram of sql recognized by it's test.
     
 m5) Read configuration from file
     (a) read cfg file from domain config directory
+            http://stackoverflow.com/questions/1245955/using-external-properties-files-in-weblogic
             http://stackoverflow.com/questions/6664021/external-properties-file-with-weblogic
-    (b) read cfg file from classpath
+    (b) (NO!) read cfg file from classpath
     (c) cfg file is a properites file
+    
     (d) use java.util.Properties load(stream) operation
-    (e) optionally use java.util.Properties save(stream) operation
+            in case of parsing issue, log information
+            
+    (e) optionally use java.util.Properties store(stream) operation
+            change of any field done setXXX will store whole set of properties in file
+            in case of write error log will be updated with error information
+            cfgReadOnly property will block writing cfg to file
+            
     
 m1) Report stack trace next to lasting sql call
     hint: web interface may ask for stack trace, and filter thread keeping lasting SQL execution

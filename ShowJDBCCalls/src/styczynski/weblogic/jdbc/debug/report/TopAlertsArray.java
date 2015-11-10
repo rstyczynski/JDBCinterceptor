@@ -91,7 +91,14 @@ public class TopAlertsArray  {
 
         //System.out.println("cnt=" + cnt + ", cnt % maxSize=" + (cnt % maxSize));
     
-}
+    }
+    
+    public void clear(){
+        for(int cnt=0; cnt<alertList.length; cnt++){
+            alertList[cnt] = null;
+        }
+            
+    }
     
     public ExecutionAlert[] getAlerts(){
         return alertList;

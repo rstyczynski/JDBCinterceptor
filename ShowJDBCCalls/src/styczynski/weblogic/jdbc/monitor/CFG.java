@@ -18,7 +18,8 @@ public class CFG {
     
     //technical properties
     private static boolean cfgReadOnly = false; //by default config file is writeable. May be disabled by setting true value in cfg file itself
-
+    private static boolean JDBCmonitoringDisabled = false; //disable jdbc interceptor 
+    
     //logic related properties    
     private static int topAlertsToStore = 50;          //Number of alerts to keep per thread
     private static int topHistogramsToStore = 50;      //Number of histograms to keep per thread
@@ -39,10 +40,27 @@ public class CFG {
         init();
     }
 
+
+    public static void setJDBCmonitoringDisabled(boolean JDBCmonitoringDisabled) {
+        CFG.JDBCmonitoringDisabled = JDBCmonitoringDisabled;
+        props.setProperty("JDBCmonitoringDisabled", String.valueOf(JDBCmonitoringDisabled));
+        storeAfterUpdate();
+        
+        if (JDBCmonitoringDisabled) {
+            log.warn("JDBCmonitoring is disabled.");
+        } else {
+            log.warn("JDBCmonitoring is enabled.");
+        }
+    }
+
+    public static boolean isJDBCmonitoringDisabled() {
+        return JDBCmonitoringDisabled;
+    }
+
     public static void setCfgReadOnly(boolean cfgReadOnly) {
         CFG.cfgReadOnly = cfgReadOnly;
         props.setProperty("cfgReadOnly", String.valueOf(cfgReadOnly));
-        store();
+        storeAfterUpdate();
     }
     
 
@@ -53,13 +71,13 @@ public class CFG {
     public static void setTopHistogramsToStore(int topHistogramsToStore) {
         CFG.topHistogramsToStore = topHistogramsToStore;
         props.setProperty("topHistogramsToStore", String.valueOf(topHistogramsToStore));
-        store();
+        storeAfterUpdate();
     }
 
     public static void setSqlMaxExecutionTime(int sqlMaxExecutionTime) {
         CFG.sqlMaxExecutionTime = sqlMaxExecutionTime;
         props.setProperty("sqlMaxExecutionTime", String.valueOf(sqlMaxExecutionTime));
-        store();
+        storeAfterUpdate();
     }
 
     public static int getSqlMaxExecutionTime() {
@@ -91,7 +109,7 @@ public class CFG {
     public static void setTopAlertsToStore(int topAlertsToStore) {
         CFG.topAlertsToStore = topAlertsToStore;
         props.setProperty("topAlertsToStore", String.valueOf(topAlertsToStore));
-        store();
+        storeAfterUpdate();
     }
 
     public static int getTopAlertsToStore() {
@@ -101,7 +119,7 @@ public class CFG {
     public static void setPrintHeadersAlways(boolean printHeadersAlways) {
         CFG.printHeadersAlways = printHeadersAlways;
         props.setProperty("printHeadersAlways", String.valueOf(printHeadersAlways));
-        store();
+        storeAfterUpdate();
     }
 
     public static boolean isPrintHeadersAlways() {
@@ -111,7 +129,7 @@ public class CFG {
     public static void setDebugNormal(boolean debugNormal) {
         CFG.debugNormal = debugNormal;
         props.setProperty("debugNormal", String.valueOf(debugNormal));
-        store();
+        storeAfterUpdate();
     }
 
     public static boolean isDebugNormal() {
@@ -121,14 +139,14 @@ public class CFG {
     public static void setDebugDetailed(boolean debugDetailed) {
         CFG.debugDetailed = debugDetailed;
         props.setProperty("debugDetailed", String.valueOf(debugDetailed));
-        store();
+        storeAfterUpdate();
     }
 
     public static boolean isDebugDetailed() {
         return CFG.debugDetailed;
     }
     
-    public static boolean store() {
+    public static boolean storeAfterUpdate() {
         boolean result = true;
         
         if (!cfgReadOnly) {
@@ -136,6 +154,7 @@ public class CFG {
             try {
                 out = new FileOutputStream(CFG.propsFile);
                 props.store(out, "");
+                log.warn("Configuration updated to:" + props.toString());
             } catch (Throwable e) {
                 result = false;
                 log.warn("Configuration cannot be stored. Reason:" + e);
@@ -197,6 +216,11 @@ public class CFG {
             try { setCfgReadOnly(Boolean.valueOf(props.getProperty(propName))); } 
             catch (NumberFormatException nfe) { log.warn("Error reading property:" + propName + "=" + props.getProperty(propName));}
 
+        propName="JDBCmonitoringDisabled";
+        if (props.containsKey(propName))
+            try { setJDBCmonitoringDisabled(Boolean.valueOf(props.getProperty(propName))); } 
+            catch (NumberFormatException nfe) { log.warn("Error reading property:" + propName + "=" + props.getProperty(propName));}
+            
         propName="printHeadersAlways";
         if (props.containsKey(propName))
             try { setPrintHeadersAlways(Boolean.valueOf(props.getProperty(propName))); } 

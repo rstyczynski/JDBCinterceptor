@@ -204,6 +204,11 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
     //
     public Object preInvokeCallback(Object jdbcObject, String jdbcMethod, Object[] jdbcParams) throws SQLException {
 
+
+        if (CFG.isJDBCmonitoringDisabled()) {
+            return null;
+        }
+        
         final String interceptorStage = "preInvokeCallback";
             
         final String   executedObject = jdbcObject != null ? jdbcObject.getClass().getName() : "(none)";
@@ -280,9 +285,12 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
     public void postInvokeCallback(Object jdbcObject, String jdbcMethod, 
                                    Object[] jdbcParams, Object jdbcResult) throws SQLException {
         
+        if (CFG.isJDBCmonitoringDisabled()) {
+            return;
+        }
+
         final String interceptorStage = "postInvokeCallback";
-            
-        
+                
         final String   executedObject = jdbcObject != null ? jdbcObject.getClass().getName() : "(none)";
         final String   executedMethod = jdbcMethod != null ? jdbcMethod : "(none)";
         final Object[] executedParameter = jdbcParams;
@@ -427,6 +435,10 @@ public class JDBCmonitor implements weblogic.jdbc.extensions.DriverInterceptor {
 
         //TODO Add execution result - to repoert exceptional finalization
 
+        if (CFG.isJDBCmonitoringDisabled()) {
+            return;
+        }
+        
         log.debug("postInvokeExceptionCallback: " + ", " + currentObject + ":" + currentMethod);
         StateInterface currentState = null;
         try {

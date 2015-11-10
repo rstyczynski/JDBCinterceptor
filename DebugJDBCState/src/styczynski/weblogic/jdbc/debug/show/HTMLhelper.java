@@ -132,6 +132,16 @@ public class HTMLhelper {
         out.println("<a href=\"setparameters?resetGlobalStatus=true\">Reset stats</a>");
         out.println("</li>");
 
+        out.println("<li>");
+        out.println("Monitor:");
+        out.println("</li>");
+        out.println("<li>");
+        out.println("<a href=\"setparameters?JDBCmonitoringDisabled=false\">enable</a>");
+        out.println("</li>");
+        out.println("<li>");
+        out.println("<a href=\"setparameters?JDBCmonitoringDisabled=true\">disable</a>");
+        out.println("</li>");
+        
 //When state is cleared by thread local, it's not possible to reinitialize. After this step references will be lost.
 //        out.println("<li>");
 //        out.println("<a href=\"setparameters?resetGlobalStatus\">Reset global status</a>");

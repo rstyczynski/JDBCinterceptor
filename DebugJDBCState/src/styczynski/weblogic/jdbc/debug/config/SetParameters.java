@@ -35,8 +35,8 @@ public class SetParameters extends HttpServlet {
         boolean debugNormal = CFG.isDebugNormal();
         boolean debugDetailed = CFG.isDebugDetailed();
         boolean resetGlobalStatus = false;
-        
-        
+        boolean JDBCmonitoringDisabled = CFG.isJDBCmonitoringDisabled();
+
         try {
             if (request.getParameter("sqlMaxExecutionTime") != null) {
                 sqlMaxExecutionTime = Integer.parseInt(request.getParameter("sqlMaxExecutionTime"));
@@ -63,6 +63,11 @@ public class SetParameters extends HttpServlet {
                 CFG.setDebugDetailed(debugDetailed);
             }
 
+            if(request.getParameter("JDBCmonitoringDisabled") !=null) {
+                JDBCmonitoringDisabled = Boolean.valueOf(request.getParameter("JDBCmonitoringDisabled")).booleanValue();
+                CFG.setJDBCmonitoringDisabled(JDBCmonitoringDisabled);
+            }
+            
             if(request.getParameter("resetGlobalStatus") != null) {
                 resetGlobalStatus = true;
             }            
@@ -79,12 +84,13 @@ public class SetParameters extends HttpServlet {
   
         out.println("<body>");
         out.println("<p>Current JDBC interceptor configuration:</p>");
-        
+    
         out.println("SqlMaxExecutionTime:" + JDBCmonitor.getSqlMaxExecutionTime() + "</br>");
         out.println("TopAlertsToStore:" + CFG.getTopAlertsToStore() + "</br>");
         out.println("PrintHeadersAlways:" + CFG.isPrintHeadersAlways() + "</br>");
         out.println("DebugNormal:" + CFG.isDebugNormal() + "</br>");
         out.println("DebugDetailed:" + CFG.isDebugDetailed()+ "</br>");
+        out.println("JDBCmonitoringDisabled:" + CFG.isJDBCmonitoringDisabled() + "</br>");    
         
         //TODO Experimental
         if (resetGlobalStatus) {
@@ -95,8 +101,13 @@ public class SetParameters extends HttpServlet {
                 String thread = threadsEnum.nextElement();
                 JDBCcallFSMstate fsmState = JDBCmonitor.getJdbcGlobalState().get(thread);
                 fsmState.initialize();
+                
+                //clear histograms
                 fsmState.getTopHistograms().clear();
-                fsmState.getTopHistograms().getReadBuffer().clear();;
+                fsmState.getTopHistograms().getReadBuffer().clear();
+                
+                //clear alerts
+                fsmState.getTopAlerts().clear();
             }
             
             out.println("</br>");

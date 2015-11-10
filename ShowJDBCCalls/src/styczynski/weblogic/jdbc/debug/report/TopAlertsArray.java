@@ -94,8 +94,9 @@ public class TopAlertsArray  {
     }
     
     public void clear(){
-        for(int cnt=0; cnt<alertList.length; cnt++){
-            alertList[cnt] = null;
+        for(int i=0; i<alertList.length; i++){
+            alertList[i] = null;
+            cnt = 0;
         }
             
     }

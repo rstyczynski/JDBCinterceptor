@@ -18,7 +18,7 @@ import javax.servlet.http.*;
 import javax.sql.DataSource;
 
 import styczynski.weblogic.jdbc.debug.security.Authorization;
-import styczynski.weblogic.jdbc.debug.show.HTMLhelperCtrl;
+import styczynski.weblogic.jdbc.debug.show.HTMLhelper;
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
 public class ExecuteSQL extends HttpServlet {
@@ -69,7 +69,7 @@ public class ExecuteSQL extends HttpServlet {
         HashMap props = new HashMap();
         props.put("testInNewPage",false);
 
-        HTMLhelperCtrl.addHeaders(out, "Execute SQL", props, request);
+        HTMLhelper.addHeaders(out, "Execute SQL", props, request);
             
         out.println("<body>");
         out.println("<p>The servlet has received a GET. This is the reply.</p>");

@@ -35,6 +35,11 @@ public class CFG {
     private static boolean debugNormal = false;        // low traffic debug
     private static boolean debugDetailed = false;      // detaild debug
 
+    //security
+    private static String roleMonitor = "Monitor";
+    private static String roleOperator = "Operator";
+    private static String roleTester = "AppTester";
+    private static String roleAdmin = "Admin";
 
     static {
         init();
@@ -145,7 +150,48 @@ public class CFG {
     public static boolean isDebugDetailed() {
         return CFG.debugDetailed;
     }
-    
+
+
+    public static void setRoleMonitor(String roleMonitor) {
+        CFG.roleMonitor = roleMonitor;
+        props.setProperty("roleMonitor", String.valueOf(roleMonitor));
+        storeAfterUpdate();
+    }
+
+    public static String getRoleMonitor() {
+        return roleMonitor;
+    }
+
+    public static void setRoleOperator(String roleOperator) {
+        CFG.roleOperator = roleOperator;
+        props.setProperty("roleOperator", String.valueOf(roleOperator));
+        storeAfterUpdate();
+    }
+
+    public static String getRoleOperator() {
+        return roleOperator;
+    }
+
+    public static void setRoleTester(String roleTester) {
+        CFG.roleTester = roleTester;
+        props.setProperty("roleTester", String.valueOf(roleTester));
+        storeAfterUpdate();
+    }
+
+    public static String getRoleTester() {
+        return roleTester;
+    }
+
+    public static void setRoleAdmin(String roleAdmin) {
+        CFG.roleAdmin = roleAdmin;
+        props.setProperty("roleAdmin", String.valueOf(roleAdmin));
+        storeAfterUpdate();
+    }
+
+    public static String getRoleAdmin() {
+        return roleAdmin;
+    }
+
     public static boolean storeAfterUpdate() {
         boolean result = true;
         
@@ -234,6 +280,26 @@ public class CFG {
         propName="debugDetailed";
         if (props.containsKey(propName))
             try { setDebugDetailed(Boolean.valueOf(props.getProperty(propName))); } 
+            catch (NumberFormatException nfe) { log.warn("Error reading property:" + propName + "=" + props.getProperty(propName));}
+
+        propName="roleMonitor";
+        if (props.containsKey(propName))
+            try { setRoleMonitor(String.valueOf(props.getProperty(propName))); } 
+            catch (NumberFormatException nfe) { log.warn("Error reading property:" + propName + "=" + props.getProperty(propName));}
+
+        propName="roleOperator";
+        if (props.containsKey(propName))
+            try { setRoleOperator(String.valueOf(props.getProperty(propName))); } 
+            catch (NumberFormatException nfe) { log.warn("Error reading property:" + propName + "=" + props.getProperty(propName));}
+
+        propName="roleTester";
+        if (props.containsKey(propName))
+            try { setRoleTester(String.valueOf(props.getProperty(propName))); } 
+            catch (NumberFormatException nfe) { log.warn("Error reading property:" + propName + "=" + props.getProperty(propName));}
+
+        propName="roleAdmin";
+        if (props.containsKey(propName))
+            try { setRoleAdmin(String.valueOf(props.getProperty(propName))); } 
             catch (NumberFormatException nfe) { log.warn("Error reading property:" + propName + "=" + props.getProperty(propName));}
 
 

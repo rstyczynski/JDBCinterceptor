@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import styczynski.weblogic.jdbc.debug.JDBCcallFSMstate;
 import styczynski.weblogic.jdbc.debug.report.ExecutionAlert;
+import styczynski.weblogic.jdbc.debug.security.Authorization;
 import styczynski.weblogic.jdbc.monitor.CFG;
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
@@ -33,6 +34,12 @@ public class LatestAlerts extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType(CONTENT_TYPE);
 
+        if(! Authorization.canUserView(request)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        
+        
         PrintWriter out = response.getWriter();
         HTMLhelper.addHeaders(out, "LatestAlerts", request);
 
@@ -85,8 +92,7 @@ public class LatestAlerts extends HttpServlet {
             alerts = allAlerts;
         }
         
-        out.println("</br>");
-        out.println("<div class=\"tabletitle\">" + "Latest " + CFG.getTopAlertsToStore() + " alerts" + "</div>");
+        out.println("<div class=\"tabletitle\">" + "Latest alerts" + "</div>");
 
         out.println("<table class=\"datatable\" id=\"genericTableFormtable\">");
         out.println("<tbody>");

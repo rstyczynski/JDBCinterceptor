@@ -31,6 +31,7 @@ import styczynski.weblogic.jdbc.debug.JDBCcallFSMstate;
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 import styczynski.weblogic.jdbc.debug.report.ExecutionAlert;
 import styczynski.weblogic.jdbc.debug.report.TopAlertsArray;
+import styczynski.weblogic.jdbc.debug.security.Authorization;
 
 public class LatestAlertsDebug extends HttpServlet {
     private static final String CONTENT_TYPE = "text/html; charset=UTF-8";
@@ -42,6 +43,12 @@ public class LatestAlertsDebug extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType(CONTENT_TYPE);
 
+        if(! Authorization.canUserView(request)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        
+        
         PrintWriter out = response.getWriter();
         addHeaders(out, "LatestAlertsDebug");
 

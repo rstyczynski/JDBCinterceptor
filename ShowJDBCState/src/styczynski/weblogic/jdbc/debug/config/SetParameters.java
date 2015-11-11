@@ -16,8 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import styczynski.weblogic.jdbc.debug.JDBCcallFSMstate;
 import styczynski.weblogic.jdbc.debug.report.ExecutionHistogram;
 import styczynski.weblogic.jdbc.debug.security.Authorization;
+import styczynski.weblogic.jdbc.debug.show.HTMLhelper;
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
-import styczynski.weblogic.jdbc.debug.show.HTMLhelperCtrl;
 import styczynski.weblogic.jdbc.monitor.CFG;
 
 public class SetParameters extends HttpServlet {
@@ -106,7 +106,7 @@ public class SetParameters extends HttpServlet {
         PrintWriter out = response.getWriter();
         out.println("<html>");
 
-        HTMLhelperCtrl.addHeaders(out, "SetParameters", request);
+        HTMLhelper.addHeaders(out, "SetParameters", request);
   
         out.println("<body>");
         

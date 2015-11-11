@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.LogFactory;
 
 import styczynski.weblogic.jdbc.debug.JDBCcallFSMstate;
+import styczynski.weblogic.jdbc.debug.security.Authorization;
 import styczynski.weblogic.jdbc.monitor.JDBCmonitor;
 
 //TODO currentSQL must show query start time, last activity time, and execution time.
@@ -33,12 +34,11 @@ public class CurrentSQL extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType(CONTENT_TYPE);
     
-        LogFactory.getLog("TEST").trace("trace");
-        LogFactory.getLog("TEST").debug("DEBUG");
-        LogFactory.getLog("TEST").info("INFO");
-        LogFactory.getLog("TEST").warn("WARN");
-        LogFactory.getLog("TEST").error("ERROR");
-        LogFactory.getLog("TEST").fatal("FATAL");
+    
+        if(! Authorization.canUserView(request)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
         
         PrintWriter out = response.getWriter();
         out.println("<html>");

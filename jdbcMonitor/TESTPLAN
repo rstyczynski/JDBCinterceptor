@@ -23,7 +23,7 @@ for cnt in {1..10000}; do executeNamedSleepSQL $(( 5000 + $(echo $RANDOM  | cut 
 
 2. Test script
 ========================
-The script is written ib bash.
+The script is written in bash.
 
 function executeNamedSleepSQL {
 
@@ -34,7 +34,7 @@ name=$4
 
 #execute SQL
 runTimeMillis=$(echo "scale=3;$runTime/1000" | bc)
-wget --http-user=$user --http-password=$password "http://$serverIP:$serverPORT/JDBCmonitor/executesql?datasource=$dataSource&param1=$runTimeMillis&sqlCmd=%2F*%20$name%20*%2F%20call%20dbms_lock.sleep(%3F)" 2>/dev/null
+wget --http-user=$user --http-password=$password "http://$serverIP:$serverPORT/JDBCmonitor/executesql?datasource=$dataSource&param1=$runTimeMillis&sqlCmd=%2F*%20$name%20*%2F%20call%20dbms_lock.sleep(%3F)" -O /dev/null 2>/dev/null
 
 wget http://$serverIP:$serverPORT/JDBCmonitor/latestAlerts -O latestAlerts 2>/dev/null
 cat latestAlerts | tr '[:lower:]' '[:upper:]' |  grep -e '</\?TABLE\|</\?TD\|</\?TR\|</\?TH' | grep -B1 -A3 DBMS | sed 's/<TD[ A-Z0-9="]*>//g' | sed 's#</TD>##g' >alerts.log

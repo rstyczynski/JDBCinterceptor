@@ -1,3 +1,13 @@
 .data/*
 *.jdb
 */classes/*
+
+DebugJDBCState/deploy/wlsJDBCmonitorDebug.war
+
+Workbench/deploy/appcl1.jar
+
+Workbench-ServerSide/deploy/webapp.war
+
+Workbench-ServerSide/deploy/webapp.war
+
+deploy/jdbcMonitor.ear

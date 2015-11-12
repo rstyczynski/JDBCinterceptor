@@ -1,0 +1,135 @@
+TODO
+========================
+
+1. Bugs critical (5)
+========================
+c4) Add state EXCEPTION handling failed statements. Easiest way to check is to execute call dbms_lock.sleep(?) 
+with non integer parameter
+
+2. Security (5)
+========================
+s2) Do not collect SQL arguments
+    a) do not write SQL arguments to log ile
+    hint: control by dynamic parameter - same solution as for debug flag
+    b) do not show SQL arguments on a web page
+    hint: control by dynamic parameter - same solution as for debug flag
+          prefer flag over filtering on Web layer withuse of user role. It's safer not to collect this information at all.
+
+s3) Add data masking for sensitive fields e.g. passwords
+    (a) for SQL text in execute*(sql)
+    (b) for parameters of prepared statement
+
+
+3. Manageability (7)
+========================
+m1) Report stack trace next to lasting sql call
+    hint: web interface may ask for stack trace, and filter thread keeping lasting SQL execution
+
+m2) Attach connection information to state object
+    hint: statement.getConnection
+    warn: taking connection information may be expensive. getMetadata is expensive - confirmed
+    
+m3) Recognize associated DataSource
+    (a) to be able to configure different interceptors in independent way
+    (b) use connection to get this data, do it once in instance lifetime
+
+m4) Add possibility to filter requests
+    SQL include/exclude
+    String sqlInclude = "";
+    String sqlExclude = "";
+    
+        ex1: all UPDATE but not on MDS
+            incl: UPDATE
+            excl: MDS
+        ex2: everything but not MDS
+            incl: null
+            excl: MDS
+
+    Filtering may be processed on alerting or state machine level
+    (a) Alerting
+        FSM captures all executions, and alerting filters what should be reported
+    (b) State Machine
+        State Machine processor has capability to hold processing until next initial state detection.
+        Processing hold will be done during SQL detection:
+        (a) prepare(sql) -> makes sense as after this step, a lot of processing may happen
+        (b) execute(sql) -> in pre method
+        -> Implement it in willProcess method (hold check)
+        -> hold should be kept in ThreadLocal
+            
+4. Bugs not critical (3)
+========================
+i3) logging on log.debug is not printed in WLS log file. 
+
+5. USABILITY (5)
+========================
+(none)
+
+6. DEVELOPMENT (1)
+========================
+d1) switch build to maven
+
+7. DONE
+========================
+
+0.6
+u1) add sorting/filtering to histograms
+u2) add sorting/filtering to alerts
+u3) add sorting/filtering to curentSQL
+u4) combine both console and control web modules back to single WAR.
+      -> use JEE security to control access
+u5) add on/off switch
+
+s5) Add role based authorisation
+        -> role based WSL cfg: https://docs.oracle.com/cd/E13222_01/wls/docs81/dvspisec/rm.html
+        -> report html errors: http://docstore.mik.ua/orelly/java-ent/servlet/ch05_07.htm
+        
+s4) Protect switching debug
+    a) only permitted operator (by role)
+    b) possibly set should be done with some verification check e.g. sum of current hour and day - to ensure that enabled by intension
+    
+c5) ClearGlobalStatus in debug module executes clear() on jdbcGlobal status object.
+    -> it have to enumerate threads and cleanup data on per thread level
+    -> current solution breaks thread to global statu communication, as localthread state object is created and linked during initialisation of jdbc interceptor 
+
+-> Change method name lookups from list to hashmap. Lookup time will be dramatically lower.
+
+m7) Add property disabling interceptor
+        useful for performnce reasons to be able to quickly disable the code
+        
+m6) Add execution time histogram of sql recognized by its test.
+    -> add histogram next to place where alert is raised
+    OK -> add array of histogram objects to JDBCcallFSMstate
+        OK -> aray must be limited to latest N sql texts
+    -> add histogram view Web page
+    
+m5) Read configuration from file
+    (a) read cfg file from domain config directory
+            http://stackoverflow.com/questions/1245955/using-external-properties-files-in-weblogic
+            http://stackoverflow.com/questions/6664021/external-properties-file-with-weblogic
+    (b) (NO!) read cfg file from classpath
+    (c) cfg file is a properites file
+    
+    (d) use java.util.Properties load(stream) operation
+            in case of parsing issue, log information
+            
+    (e) optionally use java.util.Properties store(stream) operation
+            change of any field done setXXX will store whole set of properties in file
+            in case of write error log will be updated with error information
+            cfgReadOnly property blocks writing cfg to file
+            
+0.5
+c1) Remove "toLowerCase()" from executedMethod.toLowerCase().startsWith("prepare"). This takes CPU time. 
+Check exact characters used in methd name and use this. Method name is dependednt on compiled java code, 
+and cannot change, thus there is not reason to do toLowerCase().
+Release2 - requires reengineering of state machine approach
+c2) Move currentState.process() to postInvoke. Change state should be in post invoke, after real execution of operation.
+c3) Move nextState.isTimeMeasurementStopPoint() to postInvoke handler
+s1) Remove possibility to run SQL command
+    a) only permitted operator (by role: admin)
+    hint: no - just remove it. It's not necessary, and too risky
+    
+i1) Find out why level may become negative
+i2) Time measurement is started before SQL PREPARE command and stopped after EXECUTE. It's possible that 
+application logic does something else in between, what will influence measured time. This is a by design 
+behavior, but should be somehow handled. Possibly it's good to add time measurement for both full cycle, 
+and execution only.

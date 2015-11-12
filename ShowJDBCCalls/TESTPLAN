@@ -1,5 +1,0 @@
-
-
-execute sleep 1s
-verify execution time 1s
-

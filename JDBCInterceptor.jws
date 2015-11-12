@@ -26,9 +26,8 @@
       <string v="oracle.jdeveloper.model.PathsConfiguration/ResourceBundlesContentSet"/>
    </list>
    <list n="listOfChildren">
-      <hash><url n="URL" path="DebugJDBCState/DebugJDBCState.jpr"/></hash>
-      <hash><url n="URL" path="ShowJDBCCalls/ShowJDBCCalls.jpr"/></hash>
-      <hash><url n="URL" path="ShowJDBCState/ShowJDBCState.jpr"/></hash>
+      <hash><url n="URL" path="jdbcMonitor/jdbcMonitor.jpr"/></hash>
+      <hash><url n="URL" path="jdbcMonitorConsole/jdbcMonitorConsole.jpr"/></hash>
       <hash><url n="URL" path="Workbench/Workbench.jpr"/></hash>
       <hash><url n="URL" path="Workbench-ServerSide/Workbench-ServerSide.jpr"/></hash>
    </list>

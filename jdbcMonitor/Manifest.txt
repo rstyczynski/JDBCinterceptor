@@ -1,0 +1,4 @@
+Name: jdbcMonitor
+Implementation-Title: jdbcMonitor
+Implementation-Version: 0.6
+Implementation-Vendor: ryszard.styczynski@oracle.com

@@ -9,9 +9,9 @@ import java.util.prefs.Preferences;
 import javax.servlet.http.HttpServletRequest;
 
 import styczynski.weblogic.jdbc.debug.security.Authorization;
+import styczynski.weblogic.jdbc.monitor.CFG;
 
 public class HTMLhelper {
-
 
     public static void addHeaders(PrintWriter out, String title, HttpServletRequest request) {
         HashMap props = new HashMap();
@@ -48,7 +48,29 @@ public class HTMLhelper {
         //            out.println("<div class=\"toolbar-menu\">");
         out.println("<div class=\"tbframe\">");
         out.println("<div id=\"topMenu\" class=\"tbframeContent\">");
+
         out.println("<ul>");
+        out.println("<li>");
+                                                                 
+        if(Authorization.canUserEnableDisable(request)) { 
+            if(CFG.isJDBCmonitoringDisabled()){
+                out.println("<a href=\"setparameters?JDBCmonitoringDisabled=false\">");
+                out.println("<img src=\"images/OFF.png\" alt=\"ON/OFF\" style=\"height:10px;\">");
+            } else {
+                out.println("<a href=\"setparameters?JDBCmonitoringDisabled=true\">");
+                out.println("<img src=\"images/ON.png\" alt=\"ON/OFF\" style=\"height:10px;\">");            
+            }
+            out.println("</a>");
+        } else {
+            if(CFG.isJDBCmonitoringDisabled()){
+                out.println("<img src=\"images/OFF.png\" alt=\"ON/OFF\" style=\"height:10px;\">");
+            } else {
+                out.println("<img src=\"images/ON.png\" alt=\"ON/OFF\" style=\"height:10px;\">");            
+            }
+        }
+        out.println("</li>");                                                                                
+
+
         
         out.println("<li>");
         out.println("<a href=\"currentSQL\">Current SQL</a>");
@@ -63,11 +85,8 @@ public class HTMLhelper {
         out.println("</li>");
 
         
-        
         //if (props.containsKey("histogram")) {
             out.println("</td>");
-    
-
             
             if (props.containsKey("histogram")) {
                 out.println("<td style=\"width:250px;\">");
@@ -215,19 +234,6 @@ public class HTMLhelper {
         if(Authorization.canUserReset(request)) {
             out.println("<li>");
             out.println("<a href=\"setparameters?resetGlobalStatus=true\">Reset stats</a>");
-            out.println("</li>");
-        }
-        
-        if(Authorization.canUserEnableDisable(request)) {
-        
-            out.println("<li>");
-            out.println("Monitor:");
-            out.println("</li>");
-            out.println("<li>");
-            out.println("<a href=\"setparameters?JDBCmonitoringDisabled=false\">enable</a>");
-            out.println("</li>");
-            out.println("<li>");
-            out.println("<a href=\"setparameters?JDBCmonitoringDisabled=true\">disable</a>");
             out.println("</li>");
         }
         

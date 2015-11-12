@@ -94,26 +94,114 @@ public class LatestAlerts extends HttpServlet {
         
         out.println("<div class=\"tabletitle\">" + "Latest alerts" + "</div>");
 
+        SortInfo sortInfo = HTMLhelper.switchSort(request);
+        String sortBy="(none)";
+        String href = "(none)";
+        
         out.println("<table class=\"datatable\" id=\"genericTableFormtable\">");
         out.println("<tbody>");
         out.println("<tr>");
-        out.println("<th>" + "lasted" + "</th>");
-        out.println("<th>" + "statement" + "</th>");
-        out.println("<th>" + "time" + "</th>");
+        
+        sortBy="lasted";
+        href = sortInfo.first ? sortInfo.myURL + "?sortBy=" + sortBy + "&sortAsc=false" : sortInfo.myURL + 
+                      (sortInfo.sortExists ? "&sortBy=" + sortBy : "&sortBy=" + sortBy + "&sortAsc=" + sortInfo.nextSortAsc);
+        out.println("<th>" + "<a href=" + href + ">" + sortBy + "</a>" + "</th>");
+        
+        sortBy="statement";
+        href = sortInfo.first ? sortInfo.myURL + "?sortBy=" + sortBy + "&sortAsc=false" : sortInfo.myURL + 
+                      (sortInfo.sortExists ? "&sortBy=" + sortBy : "&sortBy=" + sortBy + "&sortAsc=" + sortInfo.nextSortAsc);
+        out.println("<th>" + "<a href=" + href + ">" + sortBy + "</a>" + "</th>");
+
+        sortBy="time";
+        href = sortInfo.first ? sortInfo.myURL + "?sortBy=" + sortBy + "&sortAsc=false" : sortInfo.myURL + 
+                      (sortInfo.sortExists ? "&sortBy=" + sortBy : "&sortBy=" + sortBy + "&sortAsc=" + sortInfo.nextSortAsc);
+        out.println("<th>" + "<a href=" + href + ">" + sortBy + "</a>" + "</th>");
+
+        
         out.println("<th>" + "modifiers" + "</th>");
         out.println("<th>" + "state timing" + "</th>");
         
-        //        //sort by execution time
-        //        Collections.sort(alerts, new Comparator<ExecutionAlert>() {
-        //             @Override
-        //             public int compare(ExecutionAlert o1, ExecutionAlert o2) {
-        //                Long myTime = o1.getLapsed();
-        //                Long otherTime = o2.getLapsed();
-        //                return otherTime.compareTo(myTime);
-        //
-        //             }
-        //           }
-        //        );
+        
+        // SORTING START
+        {
+        sortBy = "(none)";
+        boolean sortAsc = false;
+        if (request.getParameter("sortBy") != null) sortBy = request.getParameter("sortBy");
+        if (request.getParameter("sortAsc") != null) sortAsc = Boolean.valueOf(request.getParameter("sortAsc"));      
+        
+        if ( "lasted".equals(sortBy) )
+            if (sortAsc)
+                Collections.sort(alerts, new Comparator<ExecutionAlert>() {
+                     @Override
+                     public int compare(ExecutionAlert o1, ExecutionAlert o2) {
+                        Long myTime = o2.getLasted();
+                        Long otherTime = o1.getLasted();
+                        return otherTime.compareTo(myTime);
+        
+                     }
+                   }
+                );
+            else
+                Collections.sort(alerts, new Comparator<ExecutionAlert>() {
+                     @Override
+                     public int compare(ExecutionAlert o1, ExecutionAlert o2) {
+                        Long myTime = o1.getLasted();
+                        Long otherTime = o2.getLasted();
+                        return otherTime.compareTo(myTime);
+                
+                     }
+                   }
+                );        
+            
+        if ( "time".equals(sortBy) )
+            if (sortAsc)
+                Collections.sort(alerts, new Comparator<ExecutionAlert>() {
+                     @Override
+                     public int compare(ExecutionAlert o1, ExecutionAlert o2) {
+                        Long myTime = o2.getTimestamp();
+                        Long otherTime = o1.getTimestamp();
+                        return otherTime.compareTo(myTime);
+        
+                     }
+                   }
+                );
+            else
+                Collections.sort(alerts, new Comparator<ExecutionAlert>() {
+                     @Override
+                     public int compare(ExecutionAlert o1, ExecutionAlert o2) {
+                        Long myTime = o1.getTimestamp();
+                        Long otherTime = o2.getTimestamp();
+                        return otherTime.compareTo(myTime);
+                
+                     }
+                   }
+                );   
+        
+        if ( "statement".equals(sortBy) )
+            if (sortAsc)
+                Collections.sort(alerts, new Comparator<ExecutionAlert>() {
+                     @Override
+                     public int compare(ExecutionAlert o1, ExecutionAlert o2) {
+                        String myTime = o2.getStatement();
+                        String otherTime = o1.getStatement();
+                        return otherTime.compareTo(myTime);
+        
+                     }
+                   }
+                );
+            else
+                Collections.sort(alerts, new Comparator<ExecutionAlert>() {
+                     @Override
+                     public int compare(ExecutionAlert o1, ExecutionAlert o2) {
+                        String myTime = o1.getStatement();
+                        String otherTime = o2.getStatement();
+                        return otherTime.compareTo(myTime);
+                
+                     }
+                   }
+                );     
+        
+        }
 
         SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy 'at' hh:mm:ss");
         sdf.setTimeZone(TimeZone.getTimeZone("CET"));

@@ -255,4 +255,47 @@ public class HTMLhelper {
         
     }
     
+    public static SortInfo switchSort(HttpServletRequest request){
+        
+        SortInfo sortInfo = new SortInfo();
+        
+        StringBuffer myURL = request.getRequestURL();
+        for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
+            String name = entry.getKey();
+            String[] value = entry.getValue();
+                        
+            if (name.equals("sortAsc")) {
+                if(value[0] != null && value[0].equals("true")) {
+                    sortInfo.nextSortAsc = false;
+                } else {
+                    sortInfo.nextSortAsc = true;
+                }
+        //                if (first) {
+        //                    first=false;
+        //                }
+                if (sortInfo.first) {
+                    myURL.append("?");
+                    sortInfo.first=false;
+                } else {
+                    myURL.append("&");
+                }
+                myURL.append("sortAsc=" + sortInfo.nextSortAsc);
+                sortInfo.sortExists=true;
+            } else {
+                if (! name.equals("sortBy") ) {
+                    if (sortInfo.first) {
+                        myURL.append("?");
+                        sortInfo.first=false;
+                    } else {
+                        myURL.append("&");
+                    }
+                    myURL.append(name + "=" + value[0]);
+                }
+            }
+        }
+        
+        sortInfo.myURL = myURL.toString();
+        return sortInfo;
+    }
+    
 }

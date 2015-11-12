@@ -96,43 +96,8 @@ public class LatestHistograms extends HttpServlet {
 //        //-> sortAsc:true
 //        //-> sortBy:cnt
         
-        boolean first=true;
-        boolean sortExists = false;
-        boolean nextSortAsc = false;
-        StringBuffer myURL = request.getRequestURL();
-        for (Map.Entry<String, String[]> entry : request.getParameterMap().entrySet()) {
-            String name = entry.getKey();
-            String[] value = entry.getValue();
-                        
-            if (name.equals("sortAsc")) {
-                if(value[0] != null && value[0].equals("true")) {
-                    nextSortAsc = false;
-                } else {
-                    nextSortAsc = true;
-                }
-//                if (first) {
-//                    first=false;
-//                }
-                if (first) {
-                    myURL.append("?");
-                    first=false;
-                } else {
-                    myURL.append("&");
-                }
-                myURL.append("sortAsc=" + nextSortAsc);
-                sortExists=true;
-            } else {
-                if (! name.equals("sortBy") ) {
-                    if (first) {
-                        myURL.append("?");
-                        first=false;
-                    } else {
-                        myURL.append("&");
-                    }
-                    myURL.append(name + "=" + value[0]);
-                }
-            }
-        }
+     
+        SortInfo sortInfo = HTMLhelper.switchSort(request);
         
         out.println("<div class=\"tabletitle\">" + "Latest histograms" + "</div>");
         out.println("<table style=\"width:1400px\" class=\"datatable\" id=\"genericTableFormtable\">");
@@ -140,24 +105,24 @@ public class LatestHistograms extends HttpServlet {
         out.println("<tr>");
         out.println("<th>" + "statement" + "</th>");
         
-        String href = first ? myURL.toString() + "?sortBy=cnt&sortAsc=false" : myURL.toString() + 
-                      (sortExists ? "&sortBy=cnt" : "&sortBy=cnt&sortAsc=" + nextSortAsc);
+        String href = sortInfo.first ? sortInfo.myURL + "?sortBy=cnt&sortAsc=false" : sortInfo.myURL + 
+                      (sortInfo.sortExists ? "&sortBy=cnt" : "&sortBy=cnt&sortAsc=" + sortInfo.nextSortAsc);
         out.println("<th>" + "<a href=" + href + ">cnt</a>" + "</th>");
         
-        href = first ? myURL.toString() + "?sortBy=sum&sortAsc=false" : myURL.toString() + 
-                      (sortExists ? "&sortBy=sum" : "&sortBy=sum&sortAsc=" + nextSortAsc);        
+        href = sortInfo.first ? sortInfo.myURL + "?sortBy=sum&sortAsc=false" : sortInfo.myURL + 
+                      (sortInfo.sortExists ? "&sortBy=sum" : "&sortBy=sum&sortAsc=" + sortInfo.nextSortAsc);        
         out.println("<th>" + "<a href=" + href + ">sum [s]</a>" + "</th>");
         
-        href = first ? myURL.toString() + "?sortBy=min&sortAsc=false" : myURL.toString() +
-                      (sortExists ? "&sortBy=min" : "&sortBy=min&sortAsc=" + nextSortAsc);
+        href = sortInfo.first ? sortInfo.myURL + "?sortBy=min&sortAsc=false" : sortInfo.myURL +
+                      (sortInfo.sortExists ? "&sortBy=min" : "&sortBy=min&sortAsc=" + sortInfo.nextSortAsc);
         out.println("<th>" + "<a href=" + href + ">min [ms]</a>" + "</th>");
         
-        href = first ? myURL.toString() + "?sortBy=avg&sortAsc=false" : myURL.toString() + 
-                      (sortExists ? "&sortBy=avg" : "&sortBy=avg&sortAsc=" + nextSortAsc);
+        href = sortInfo.first ? sortInfo.myURL + "?sortBy=avg&sortAsc=false" : sortInfo.myURL + 
+                      (sortInfo.sortExists ? "&sortBy=avg" : "&sortBy=avg&sortAsc=" + sortInfo.nextSortAsc);
         out.println("<th>" + "<a href=" + href + ">avg [ms]</a>" + "</th>");
 
-        href = first ? myURL.toString() + "?sortBy=max&sortAsc=false" : myURL.toString() +
-                      (sortExists ? "&sortBy=max" : "&sortBy=max&sortAsc=" + nextSortAsc);
+        href = sortInfo.first ? sortInfo.myURL + "?sortBy=max&sortAsc=false" : sortInfo.myURL +
+                      (sortInfo.sortExists ? "&sortBy=max" : "&sortBy=max&sortAsc=" + sortInfo.nextSortAsc);
         out.println("<th>" + "<a href=" + href + ">max [ms]</a>" + "</th>");
         
         out.println("<th style=\"width:400px\">" + "histogram" + "</th>");

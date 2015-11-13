@@ -11,7 +11,7 @@
         <externally-defined/>
     </security-role-assignment>
     <security-role-assignment>
-        <role-name>AppTest</role-name>
+        <role-name>AppTester</role-name>
         <externally-defined/>
     </security-role-assignment>
     <security-role-assignment>

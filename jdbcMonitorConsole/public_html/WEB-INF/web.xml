@@ -63,7 +63,7 @@
             <role-name>Monitor</role-name>
             <role-name>Admin</role-name>
             <role-name>Operator</role-name>
-            <role-name>TestApp</role-name>
+            <role-name>AppTester</role-name>
         </auth-constraint>
     </security-constraint>
     
@@ -74,7 +74,7 @@
         </web-resource-collection>
         <auth-constraint>
             <role-name>Admin</role-name>
-            <role-name>TestApp</role-name>
+            <role-name>AppTester</role-name>
         </auth-constraint>
     </security-constraint>
     
@@ -88,7 +88,7 @@
         <auth-constraint>
             <role-name>Admin</role-name>
             <role-name>Operator</role-name>
-            <role-name>TestApp</role-name>
+            <role-name>AppTester</role-name>
             <role-name>Monitor</role-name>
         </auth-constraint>
     </security-constraint>
@@ -104,7 +104,7 @@
         <role-name>Operator</role-name>
     </security-role>
     <security-role>
-        <role-name>AppTest</role-name>
+        <role-name>AppTester</role-name>
     </security-role>
     <security-role>
         <role-name>Monitor</role-name>

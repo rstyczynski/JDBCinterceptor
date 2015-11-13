@@ -6,7 +6,7 @@ TODO
 c4) Add state EXCEPTION handling failed statements. Easiest way to check is to execute call dbms_lock.sleep(?) 
 with non integer parameter
 
-2. Security (5)
+2. Security (6)
 ========================
 s2) Do not collect SQL arguments
     a) do not write SQL arguments to log ile
@@ -70,6 +70,9 @@ d1) switch build to maven
 
 7. DONE
 ========================
+
+0.6.1
+s6) Tester role was wrongly named as AppTest. Fixed - changed to WLS correct name - AppTester 
 
 0.6
 u1) add sorting/filtering to histograms

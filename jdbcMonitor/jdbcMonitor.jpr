@@ -79,19 +79,33 @@
          <list n="constituent-sets">
             <hash>
                <list n="pattern-filters">
+                  <string v="+*"/>
+               </list>
+               <list n="url-path">
+                  <url path="."/>
+               </list>
+            </hash>
+            <hash>
+               <list n="pattern-filters">
                   <string v="+index.html"/>
                </list>
                <list n="url-path">
                   <url path="javadoc/"/>
                </list>
             </hash>
+            <hash>
+               <list n="pattern-filters">
+                  <string v="+**"/>
+               </list>
+               <list n="url-path">
+                  <url path="src/main/scripts/"/>
+               </list>
+            </hash>
          </list>
          <list n="pattern-filters">
             <string v="+*"/>
          </list>
-         <list n="url-path">
-            <url path="."/>
-         </list>
+         <list n="url-path"/>
       </hash>
    </hash>
    <hash n="oracle.ide.model.TechnologyScopeConfiguration">
@@ -99,6 +113,7 @@
          <string v="EJB"/>
          <string v="JSP"/>
          <string v="Java"/>
+         <string v="Maven"/>
          <string v="XML"/>
       </list>
    </hash>
@@ -149,6 +164,9 @@
       <list n="profileList">
          <string v="wlsJDBCmonitor"/>
       </list>
+   </hash>
+   <hash n="oracle.jdeveloper.maven.compiler.MavenConfiguration">
+      <url n="pomfileURL" path="pom.xml"/>
    </hash>
    <hash n="oracle.jdeveloper.model.J2eeSettings">
       <value n="j2eeWebAppName" v="Application4-Client-webapp"/>

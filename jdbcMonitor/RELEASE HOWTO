@@ -1,3 +1,5 @@
+JDev
+----
 1. build must be done in JDeveloper 12.1.3.0.0 or newer
 2. update version in jdbcMonitor Manifest.txt 
 3. update version in jdbcMonitorConsole Manifest.txt 
@@ -6,3 +8,11 @@
 6. generate jar for jdbcMonitor
 7. generate war for jdbcMonitorConsole
 
+Maven
+-----
+1. update version in jdbcMonitor/pom/xml/project/version
+2. update version in jdbcMonitorConsole/pom/xml/project/version
+3. generate jar using mvn
+4. generate war using mvn
+
+Done.
